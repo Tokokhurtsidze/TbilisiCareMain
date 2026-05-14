@@ -1,0 +1,38 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Deed proofs — photo OR video. Any signed-in user can view (they appear in the public feed
+    // for approved deeds). Only the owner can write into their own folder.
+    match /deeds/{uid}/{deedId}/{file} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null
+        && request.auth.uid == uid
+        && request.resource.size < 50 * 1024 * 1024
+        && (
+          request.resource.contentType.matches('video/.*') ||
+          request.resource.contentType.matches('image/.*')
+        );
+    }
+
+    // User profile photo.
+    match /users/{uid}/photo {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null
+        && request.auth.uid == uid
+        && request.resource.size < 5 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*');
+    }
+
+    // Post media — photo or video. Public read for any signed-in user.
+    match /posts/{uid}/{postId}/{file} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null
+        && request.auth.uid == uid
+        && request.resource.size < 50 * 1024 * 1024
+        && (
+          request.resource.contentType.matches('video/.*') ||
+          request.resource.contentType.matches('image/.*')
+        );
+    }
+  }
+}

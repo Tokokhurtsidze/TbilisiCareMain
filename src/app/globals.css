@@ -1,0 +1,77 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Multi-script font stack — Latin / Cyrillic / Georgian via Google Fonts CDN. */
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Georgian:wght@400;500;600;700&display=swap");
+
+:root {
+  --surface-base: #ffffff;
+  --surface-elevated: #f7f9fc;
+  --surface-subtle: #edf2f7;
+  --primary: #0052cc;
+  --primary-hover: #003d99;
+  --primary-soft: #e6effb;
+  --text-primary: #0b1426;
+  --text-secondary: #4a5568;
+  --success: #1b873f;
+  --warning: #b7791f;
+  --error: #c53030;
+  --border: #e2e8f0;
+}
+
+.dark {
+  --surface-base: #0b1426;
+  --surface-elevated: #12203a;
+  --surface-subtle: #1a2b47;
+  --primary: #5b8def;
+  --primary-hover: #7aa5f5;
+  --primary-soft: #1f3563;
+  --text-primary: #f1f5fb;
+  --text-secondary: #a6b4cc;
+  --border: #233553;
+}
+
+html {
+  font-size: 17px;
+}
+
+body {
+  background: var(--surface-base);
+  color: var(--text-primary);
+  font-family: "Inter", "Noto Sans Georgian", system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  line-height: 1.6;
+}
+
+/* Georgian-aware spacing — no fake uppercase, neutral tracking */
+:lang(ka) {
+  letter-spacing: 0;
+  line-height: 1.6;
+}
+:lang(ka) [data-uppercase] {
+  text-transform: none !important;
+}
+
+/* Larger targets / reduced motion when elder mode is on */
+.elder-mode {
+  font-size: 19px;
+}
+.elder-mode * {
+  animation-duration: 0.001s !important;
+  transition-duration: 0.001s !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.001s !important;
+    transition-duration: 0.001s !important;
+  }
+}
+
+/* Focus rings — visible in both modes */
+*:focus-visible {
+  outline: 3px solid var(--primary);
+  outline-offset: 2px;
+  border-radius: 6px;
+}

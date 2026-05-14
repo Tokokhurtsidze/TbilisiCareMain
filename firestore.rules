@@ -1,0 +1,94 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{db}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+    function isSelf(uid) {
+      return signedIn() && request.auth.uid == uid;
+    }
+
+    // Users — public profile fields are readable by all signed-in users (needed for leaderboard + feed).
+    match /users/{uid} {
+      allow read: if signedIn();
+      allow create: if isSelf(uid);
+      // MVP: allow self to update own points. PRODUCTION: lock this and move to a Cloud Function
+      // triggered by deeds/onCreate so points cannot be tampered with from the client.
+      allow update: if isSelf(uid);
+      allow delete: if false;
+    }
+
+    // Deeds — anyone signed in can read APPROVED deeds (public feed). Owners see their own regardless of status.
+    match /deeds/{deedId} {
+      allow read: if signedIn() && (
+        resource.data.status == 'approved' ||
+        resource.data.userId == request.auth.uid
+      );
+      allow create: if signedIn()
+        && request.resource.data.userId == request.auth.uid;
+      // Owner can update freely; anyone signed-in can update ONLY commentCount
+      // (so other users' comments bump the denormalized count).
+      // PRODUCTION: replace with a Cloud Function trigger on comment create/delete.
+      allow update: if signedIn() && (
+        resource.data.userId == request.auth.uid ||
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['commentCount'])
+      );
+      allow delete: if false;
+
+      // Comments — nested under each deed.
+      match /comments/{commentId} {
+        allow read: if signedIn();
+        allow create: if signedIn()
+          && request.resource.data.userId == request.auth.uid
+          && request.resource.data.text is string
+          && request.resource.data.text.size() > 0
+          && request.resource.data.text.size() <= 500;
+        allow update: if false;
+        allow delete: if signedIn()
+          && resource.data.userId == request.auth.uid;
+      }
+    }
+
+    // Posts — free-form text + optional media. Public read for any signed-in user.
+    match /posts/{postId} {
+      allow read: if signedIn();
+      allow create: if signedIn()
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.text is string
+        && request.resource.data.text.size() > 0
+        && request.resource.data.text.size() <= 2000;
+      // Owner can update freely; anyone signed-in can update ONLY commentCount.
+      allow update: if signedIn() && (
+        resource.data.userId == request.auth.uid ||
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['commentCount'])
+      );
+      allow delete: if signedIn() && resource.data.userId == request.auth.uid;
+
+      match /comments/{commentId} {
+        allow read: if signedIn();
+        allow create: if signedIn()
+          && request.resource.data.userId == request.auth.uid
+          && request.resource.data.text is string
+          && request.resource.data.text.size() > 0
+          && request.resource.data.text.size() <= 500;
+        allow update: if false;
+        allow delete: if signedIn() && resource.data.userId == request.auth.uid;
+      }
+    }
+
+    match /rewards/{id} {
+      allow read: if signedIn();
+      allow write: if false;
+    }
+
+    match /redemptions/{id} {
+      allow read: if signedIn() && resource.data.userId == request.auth.uid;
+      allow create: if signedIn()
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.costInPoints is int
+        && request.resource.data.costInPoints > 0;
+      allow update, delete: if false;
+    }
+  }
+}
