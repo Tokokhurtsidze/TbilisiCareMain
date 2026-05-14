@@ -1,6 +1,10 @@
 import { getApps, initializeApp, type FirebaseApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider, type Auth } from "firebase/auth";
-import { getFirestore, type Firestore } from "firebase/firestore";
+import {
+  getFirestore,
+  initializeFirestore,
+  type Firestore,
+} from "firebase/firestore";
 import { getStorage, type FirebaseStorage } from "firebase/storage";
 
 const config = {
@@ -31,7 +35,16 @@ export function auth(): Auth {
 }
 
 export function db(): Firestore {
-  if (!_db) _db = getFirestore(getApp());
+  if (!_db) {
+    const a = getApp();
+    try {
+      _db = initializeFirestore(a, {
+        experimentalAutoDetectLongPolling: true,
+      });
+    } catch {
+      _db = getFirestore(a);
+    }
+  }
   return _db;
 }
 
