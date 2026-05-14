@@ -46,8 +46,12 @@ export default function DeedDetailPage() {
       return;
     }
     (async () => {
-      const snap = await getDoc(doc(db(), "deeds", deedId));
-      if (snap.exists()) setDeed({ id: snap.id, ...(snap.data() as object) } as Deed);
+      try {
+        const snap = await getDoc(doc(db(), "deeds", deedId));
+        if (snap.exists()) setDeed({ id: snap.id, ...(snap.data() as object) } as Deed);
+      } catch (err) {
+        console.error("[deed] failed to load", err);
+      }
     })();
   }, [deedId, isDemo]);
 

@@ -50,8 +50,12 @@ export default function PostDetailPage() {
       return;
     }
     (async () => {
-      const snap = await getDoc(doc(db(), "posts", postId));
-      if (snap.exists()) setPost({ id: snap.id, ...(snap.data() as object) } as Post);
+      try {
+        const snap = await getDoc(doc(db(), "posts", postId));
+        if (snap.exists()) setPost({ id: snap.id, ...(snap.data() as object) } as Post);
+      } catch (err) {
+        console.error("[post] failed to load", err);
+      }
     })();
   }, [postId, isDemo]);
 

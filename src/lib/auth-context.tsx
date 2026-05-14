@@ -66,25 +66,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setLoading(false);
         return;
       }
-      const ref = doc(db(), "users", fbUser.uid);
-      const snap = await getDoc(ref);
-      if (!snap.exists()) {
-        const fresh: UserDoc = {
-          id: fbUser.uid,
-          fullName: fbUser.displayName ?? "",
-          preferredLocale: "ka",
-          district: null,
-          carePoints: 0,
-          level: 1,
-          reputationScore: 50,
-          elderMode: false,
-          consentLeaderboard: true,
-          photoURL: fbUser.photoURL ?? null,
-          createdAt: Date.now(),
-        };
-        await setDoc(ref, { ...fresh, createdAt: serverTimestamp() });
+      try {
+        const ref = doc(db(), "users", fbUser.uid);
+        const snap = await getDoc(ref);
+        if (!snap.exists()) {
+          const fresh: UserDoc = {
+            id: fbUser.uid,
+            fullName: fbUser.displayName ?? "",
+            preferredLocale: "ka",
+            district: null,
+            carePoints: 0,
+            level: 1,
+            reputationScore: 50,
+            elderMode: false,
+            consentLeaderboard: true,
+            photoURL: fbUser.photoURL ?? null,
+            createdAt: Date.now(),
+          };
+          await setDoc(ref, { ...fresh, createdAt: serverTimestamp() });
+        }
+      } catch (err) {
+        console.error("[auth] failed to load user doc", err);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     });
     return () => unsubAuth();
   }, []);
