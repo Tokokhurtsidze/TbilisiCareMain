@@ -9,6 +9,11 @@ import {
   Image as ImageIcon,
   Video,
   X,
+  Trash2,
+  Dog,
+  HeartHandshake,
+  SprayCan,
+  Trees,
 } from "lucide-react";
 import {
   collection,
@@ -180,42 +185,103 @@ export default function SubmitPage() {
     }
   };
 
+  const submittedTask = TASK_TYPES.find((x) => x.id === taskType);
+
   if (status === "done") {
+    const confettiColors = ["#0052cc", "#1b873f", "#b7791f", "#5b8def", "#c53030", "#0063f7"];
+    const pieces = Array.from({ length: 24 }, (_, i) => ({
+      color: confettiColors[i % confettiColors.length],
+      left: `${10 + (i * 3.4) % 80}%`,
+      delay: `${(i * 0.07).toFixed(2)}s`,
+      duration: `${0.9 + (i % 5) * 0.15}s`,
+      drift: `${(i % 2 === 0 ? 1 : -1) * (10 + (i % 4) * 12)}px`,
+      spin: `${360 + (i % 3) * 180}deg`,
+      shape: i % 3 === 0 ? "50%" : i % 3 === 1 ? "2px" : "50% 2px",
+    }));
+
     return (
-      <div className="min-h-[60vh] grid place-items-center text-center">
-        <div>
-          <CheckCircle2 size={64} className="text-success mx-auto mb-3" />
-          <p className="text-lg font-semibold">{t("submit.success")}</p>
+      <div className="min-h-[60vh] grid place-items-center text-center relative overflow-hidden">
+        {/* Confetti */}
+        {pieces.map((p, i) => (
+          <div
+            key={i}
+            className="confetti-piece"
+            style={{
+              backgroundColor: p.color,
+              left: p.left,
+              "--delay": p.delay,
+              "--duration": p.duration,
+              "--drift": p.drift,
+              "--spin": p.spin,
+              borderRadius: p.shape,
+            } as React.CSSProperties}
+          />
+        ))}
+
+        <div className="relative z-10 space-y-4">
+          <div className="animate-bounce-in">
+            <CheckCircle2 size={72} className="text-success mx-auto" />
+          </div>
+          <div className="animate-slide-up stagger-2">
+            <p className="text-2xl font-extrabold tracking-tight">{t("submit.success")}</p>
+          </div>
+          {submittedTask && (
+            <div className="animate-pop-in stagger-3">
+              <div className="inline-flex flex-col items-center gap-1 px-6 py-4 rounded-2xl bg-brand-soft border border-brand/20">
+                <p className="text-4xl font-extrabold text-brand tabular-nums">
+                  +{submittedTask.basePoints}
+                </p>
+                <p className="text-sm font-semibold text-brand uppercase tracking-wider">Care Points</p>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     );
   }
 
+  const SUBMIT_ICONS = {
+    "trash-2": Trash2,
+    dog: Dog,
+    "heart-handshake": HeartHandshake,
+    "spray-can": SprayCan,
+    trees: Trees,
+  } as const;
+
   return (
     <div className="space-y-5">
-      <h1 className="text-2xl font-bold">{t("submit.title")}</h1>
+      <h1 className="text-2xl font-extrabold tracking-tight">{t("submit.title")}</h1>
 
-      <div className="rounded-xl bg-brand-soft text-brand text-sm font-medium px-4 py-3">
+      <div className="rounded-xl bg-brand-soft text-brand text-sm font-medium px-4 py-3 border border-brand/20">
         {t("submit.demoNotice")}
       </div>
 
       <Card>
-        <p className="text-sm font-medium mb-3">{t("submit.choose")}</p>
+        <p className="text-xs font-bold uppercase tracking-wider text-ink-secondary mb-3">{t("submit.choose")}</p>
         <div className="grid grid-cols-2 gap-2">
-          {TASK_TYPES.map((task) => (
-            <button
-              key={task.id}
-              onClick={() => setTaskType(task.id)}
-              className={`p-3 rounded-xl text-sm font-medium text-left transition border ${
-                taskType === task.id
-                  ? "bg-brand text-white border-brand"
-                  : "bg-surface-subtle border-line text-ink-primary"
-              }`}
-            >
-              {t(`task.${task.id}`)}
-              <div className="text-xs opacity-80 mt-0.5">+{task.basePoints} CP</div>
-            </button>
-          ))}
+          {TASK_TYPES.map((task) => {
+            const Icon = SUBMIT_ICONS[task.icon as keyof typeof SUBMIT_ICONS];
+            const active = taskType === task.id;
+            return (
+              <button
+                key={task.id}
+                onClick={() => setTaskType(task.id)}
+                className={`p-3.5 rounded-xl text-sm font-semibold text-left transition-all duration-200 border flex items-start gap-3 group ${
+                  active
+                    ? "bg-brand text-white border-brand shadow-[var(--shadow-brand)]"
+                    : "bg-surface-subtle border-line text-ink-primary hover:border-brand hover:bg-brand-soft"
+                }`}
+              >
+                <div className={`mt-0.5 rounded-lg p-1.5 ${active ? "bg-white/20" : "bg-surface-base"}`}>
+                  {Icon && <Icon size={16} className={active ? "text-white" : "text-brand"} strokeWidth={1.7} />}
+                </div>
+                <div>
+                  <div>{t(`task.${task.id}`)}</div>
+                  <div className={`text-xs mt-0.5 font-bold ${active ? "text-white/80" : "text-brand"}`}>+{task.basePoints} CP</div>
+                </div>
+              </button>
+            );
+          })}
         </div>
       </Card>
 

@@ -74,9 +74,9 @@ function PartnerCard({
 }) {
   return (
     <div className="rounded-2xl border border-line bg-surface-elevated p-4 flex items-center gap-3">
-      <div className="h-14 w-14 rounded-xl bg-surface-base border border-line grid place-items-center overflow-hidden">
+      <div className="h-16 w-16 rounded-xl bg-surface-base border border-line grid place-items-center overflow-hidden">
         {visual.kind === "logo" ? (
-          <TbilisiLogo size={40} />
+          <TbilisiLogo size={52} />
         ) : (
           <visual.Icon size={24} className="text-brand" />
         )}

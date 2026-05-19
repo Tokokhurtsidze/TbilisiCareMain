@@ -85,6 +85,25 @@ export const TASK_TYPES: TaskType[] = [
   { id: "tree-care", basePoints: 15, icon: "trees", maxDaily: 3 },
 ];
 
+export type OfficialPostTag =
+  | "announcement"
+  | "milestone"
+  | "spotlight"
+  | "reward"
+  | "event";
+
+export type OfficialPost = {
+  id: string;
+  tag: OfficialPostTag;
+  title: string;
+  body: string;
+  imageUrl?: string;
+  stats?: { label: string; value: string }[];
+  ctaLabel?: string;
+  ctaHref?: string;
+  createdAt: number;
+};
+
 export type Reward = {
   id: string;
   partnerId: string;

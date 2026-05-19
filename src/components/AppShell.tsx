@@ -35,22 +35,18 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   return (
     <>
-      <header className="sticky top-0 z-30 bg-surface-base/95 backdrop-blur border-b border-line">
+      <header className="sticky top-0 z-30 bg-surface-base/96 backdrop-blur-md border-b border-line shadow-[var(--shadow-sm)]">
         <div className="max-w-6xl mx-auto h-14 flex items-center px-4 gap-3">
           <button
-            className="md:hidden h-10 w-10 grid place-items-center rounded-lg hover:bg-surface-subtle"
+            className="md:hidden h-10 w-10 grid place-items-center rounded-xl hover:bg-surface-subtle transition-colors"
             onClick={() => setDrawerOpen(true)}
             aria-label={t("site.menu")}
           >
-            <Menu size={22} />
+            <Menu size={21} />
           </button>
 
           <Link href="/app" className="flex items-center gap-2 mr-auto">
-            <TbilisiLogo size={36} className="shrink-0" />
-            <span className="font-semibold">{t("app.name")}</span>
-            <span className="ml-2 text-[10px] font-bold tracking-widest text-brand bg-brand-soft px-2 py-0.5 rounded-full">
-              {t("demo.badge")}
-            </span>
+            <TbilisiLogo size={48} className="shrink-0" />
           </Link>
 
           <nav
@@ -66,13 +62,13 @@ export function AppShell({ children }: { children: ReactNode }) {
                   title={t(key)}
                   aria-label={t(key)}
                   aria-current={active ? "page" : undefined}
-                  className={`h-10 w-10 grid place-items-center rounded-xl transition ${
+                  className={`h-9 w-9 grid place-items-center rounded-xl transition-all duration-150 ${
                     active
-                      ? "bg-brand text-white"
+                      ? "bg-brand text-white shadow-[var(--shadow-brand)]"
                       : "text-ink-secondary hover:bg-surface-subtle hover:text-brand"
                   }`}
                 >
-                  <Icon size={18} strokeWidth={1.7} />
+                  <Icon size={17} strokeWidth={active ? 2 : 1.7} />
                 </Link>
               );
             })}
@@ -80,7 +76,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
           <Link
             href="/app/profile"
-            className="h-9 w-9 rounded-full bg-surface-subtle grid place-items-center overflow-hidden hover:ring-2 hover:ring-brand transition"
+            className="h-9 w-9 rounded-full bg-surface-subtle grid place-items-center overflow-hidden hover:ring-2 hover:ring-brand hover:ring-offset-1 hover:ring-offset-surface-base transition-all duration-150"
             aria-label={t("profile.title")}
           >
             {userDoc?.photoURL ? (
@@ -90,7 +86,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                 className="h-full w-full object-cover"
               />
             ) : (
-              <User size={18} className="text-ink-secondary" />
+              <User size={17} className="text-ink-secondary" />
             )}
           </Link>
         </div>
@@ -103,11 +99,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           </div>
         </aside>
 
-        <main
-          className={`flex-1 min-w-0 max-w-2xl mx-auto md:mx-0 w-full pt-6 pb-24 md:pb-10 ${
-            userDoc?.elderMode ? "elder-mode" : ""
-          }`}
-        >
+        <main className="flex-1 min-w-0 max-w-2xl mx-auto md:mx-0 w-full pt-6 pb-24 md:pb-10">
           {children}
         </main>
       </div>

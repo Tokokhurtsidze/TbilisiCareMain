@@ -1,4 +1,4 @@
-import type { Comment, Deed, Post, ProofType, UserDoc } from "@/types";
+import type { Comment, Deed, OfficialPost, Post, ProofType, UserDoc } from "@/types";
 
 const av = (seed: string) =>
   `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(seed)}`;
@@ -345,6 +345,83 @@ export const DEMO_POST_COMMENTS: Record<string, Comment[]> = {
   ],
   "demo-p4": [],
 };
+
+// ---- Official Posts ----
+
+const TBILISI_IMAGES = {
+  cleanup: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=900&auto=format&fit=crop",
+  community: "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=900&auto=format&fit=crop",
+  park: "https://images.unsplash.com/photo-1519331379826-f10be5486c6f?w=900&auto=format&fit=crop",
+  city: "https://images.unsplash.com/photo-1486325212027-8081e485255e?w=900&auto=format&fit=crop",
+};
+
+export const DEMO_OFFICIAL_POSTS: OfficialPost[] = [
+  {
+    id: "official-1",
+    tag: "milestone",
+    title: "50,000 Good Deeds in Tbilisi! 🎉",
+    body: "This week our community crossed 50,000 verified good deeds. Every piece of litter picked up, every stray fed, every neighbor helped — it all counted. Thank you, Tbilisi.",
+    imageUrl: TBILISI_IMAGES.community,
+    stats: [
+      { label: "Total Deeds", value: "50,000+" },
+      { label: "Active Citizens", value: "10,124" },
+      { label: "Care Points Earned", value: "312K" },
+    ],
+    ctaLabel: "See Leaderboard",
+    ctaHref: "/app/leaderboard",
+    createdAt: Date.now() - 1000 * 60 * 60 * 3,
+  },
+  {
+    id: "official-2",
+    tag: "reward",
+    title: "New Reward: Free Metro Ride 🚇",
+    body: "In partnership with Tbilisi Transport Company, you can now redeem 200 CP for a free metro ride. Your good deeds literally move the city.",
+    stats: [
+      { label: "Cost", value: "200 CP" },
+      { label: "Valid", value: "30 days" },
+      { label: "Stock", value: "500 left" },
+    ],
+    ctaLabel: "Redeem Now",
+    ctaHref: "/app/marketplace",
+    createdAt: Date.now() - 1000 * 60 * 60 * 18,
+  },
+  {
+    id: "official-3",
+    tag: "spotlight",
+    title: "Citizen of the Week: Giorgi Beridze 🏆",
+    body: "Giorgi completed 47 verified deeds this week across Vake and Saburtalo — litter cleanup, tree care, and senior assistance. This is what a Guardian looks like.",
+    imageUrl: TBILISI_IMAGES.cleanup,
+    stats: [
+      { label: "Deeds This Week", value: "47" },
+      { label: "Total Points", value: "18,420" },
+      { label: "District", value: "Vake" },
+    ],
+    createdAt: Date.now() - 1000 * 60 * 60 * 40,
+  },
+  {
+    id: "official-4",
+    tag: "event",
+    title: "City-Wide Cleanup: Saturday 10am 🌿",
+    body: "Join thousands of Tbilisi citizens for our biggest organized cleanup yet. All 6 districts, 200+ volunteers, 3 hours. Earn double CP all day Saturday.",
+    imageUrl: TBILISI_IMAGES.park,
+    stats: [
+      { label: "Date", value: "Saturday" },
+      { label: "Starts", value: "10:00" },
+      { label: "Bonus", value: "2× CP" },
+    ],
+    ctaLabel: "I'm In",
+    ctaHref: "/app/submit",
+    createdAt: Date.now() - 1000 * 60 * 60 * 72,
+  },
+  {
+    id: "official-5",
+    tag: "announcement",
+    title: "TbilisiCare Now in All 6 Districts",
+    body: "We've officially expanded to Gldani and Didi Dighomi. Every district of Tbilisi now has active deed verification and local leaderboards. Welcome, new neighbors.",
+    imageUrl: TBILISI_IMAGES.city,
+    createdAt: Date.now() - 1000 * 60 * 60 * 96,
+  },
+];
 
 // ---- News ----
 

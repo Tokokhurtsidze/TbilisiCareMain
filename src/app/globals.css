@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 /* Multi-script font stack — Latin / Cyrillic / Georgian via Google Fonts CDN. */
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Georgian:wght@400;500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,400;0,14..32,500;0,14..32,600;0,14..32,700;0,14..32,800&family=Noto+Sans+Georgian:wght@300;400;500;600;700;800&display=swap");
 
 :root {
   --surface-base: #ffffff;
@@ -18,6 +18,11 @@
   --warning: #b7791f;
   --error: #c53030;
   --border: #e2e8f0;
+
+  --shadow-sm: 0 1px 2px rgba(11,20,38,0.04), 0 2px 6px rgba(11,20,38,0.04);
+  --shadow-md: 0 1px 3px rgba(11,20,38,0.04), 0 4px 16px rgba(11,20,38,0.08);
+  --shadow-lg: 0 4px 8px rgba(11,20,38,0.05), 0 16px 40px rgba(11,20,38,0.10);
+  --shadow-brand: 0 4px 16px rgba(0,82,204,0.28);
 }
 
 .dark {
@@ -30,10 +35,16 @@
   --text-primary: #f1f5fb;
   --text-secondary: #a6b4cc;
   --border: #233553;
+
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.2), 0 2px 6px rgba(0,0,0,0.15);
+  --shadow-md: 0 1px 3px rgba(0,0,0,0.2), 0 4px 16px rgba(0,0,0,0.22);
+  --shadow-lg: 0 4px 8px rgba(0,0,0,0.25), 0 16px 40px rgba(0,0,0,0.28);
+  --shadow-brand: 0 4px 16px rgba(91,141,239,0.32);
 }
 
 html {
   font-size: 17px;
+  scroll-behavior: smooth;
 }
 
 body {
@@ -41,26 +52,33 @@ body {
   color: var(--text-primary);
   font-family: "Inter", "Noto Sans Georgian", system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
-  line-height: 1.6;
+  line-height: 1.65;
 }
 
-/* Georgian-aware spacing — no fake uppercase, neutral tracking */
+/* Georgian-aware typography — Noto Sans Georgian as primary script font */
 :lang(ka) {
+  font-family: "Noto Sans Georgian", "Inter", system-ui, sans-serif;
   letter-spacing: 0;
-  line-height: 1.6;
+  line-height: 1.7;
+  font-optical-sizing: auto;
+  text-rendering: optimizeLegibility;
 }
 :lang(ka) [data-uppercase] {
   text-transform: none !important;
 }
+/* Tighten Georgian headings — Noto Sans Georgian bold can feel loose */
+:lang(ka) h1, :lang(ka) h2, :lang(ka) h3 {
+  letter-spacing: -0.01em;
+  line-height: 1.25;
+}
+/* Small text / badges in Georgian need slightly more size */
+:lang(ka) .text-xs {
+  font-size: 0.8rem;
+}
+:lang(ka) .text-\[10px\], :lang(ka) .text-\[11px\] {
+  font-size: 0.75rem;
+}
 
-/* Larger targets / reduced motion when elder mode is on */
-.elder-mode {
-  font-size: 19px;
-}
-.elder-mode * {
-  animation-duration: 0.001s !important;
-  transition-duration: 0.001s !important;
-}
 
 @media (prefers-reduced-motion: reduce) {
   * {
@@ -75,3 +93,173 @@ body {
   outline-offset: 2px;
   border-radius: 6px;
 }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-secondary); }
+
+/* === Keyframe Animations === */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes scale-in {
+  0% { opacity: 0; transform: scale(0.4); }
+  60% { transform: scale(1.12); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes slide-up {
+  0% { opacity: 0; transform: translateY(20px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes float-up {
+  0% { opacity: 1; transform: translateY(0) scale(1); }
+  100% { opacity: 0; transform: translateY(-52px) scale(0.75); }
+}
+
+@keyframes xp-fill {
+  0% { width: 0% !important; }
+}
+
+@keyframes glow-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(0, 82, 204, 0.35); }
+  50% { box-shadow: 0 0 0 10px rgba(0, 82, 204, 0); }
+}
+
+@keyframes bounce-in {
+  0% { transform: scale(0) rotate(-8deg); opacity: 0; }
+  55% { transform: scale(1.18) rotate(2deg); }
+  80% { transform: scale(0.95) rotate(-1deg); }
+  100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+
+@keyframes confetti-drift {
+  0% { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(220px) rotate(var(--spin, 540deg)) translateX(var(--drift, 0px)); opacity: 0; }
+}
+
+@keyframes fade-in {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+@keyframes pop-in {
+  0% { opacity: 0; transform: scale(0.7) translateY(10px); }
+  70% { transform: scale(1.05) translateY(-2px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+@keyframes hero-float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-6px); }
+}
+
+/* === Animation utility classes === */
+.animate-scale-in   { animation: scale-in   0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+.animate-slide-up   { animation: slide-up   0.4s cubic-bezier(0.34, 1.2,  0.64, 1) both; }
+.animate-float-up   { animation: float-up   1s   ease-out forwards; }
+.animate-fade-in    { animation: fade-in    0.3s ease both; }
+.animate-bounce-in  { animation: bounce-in  0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+.animate-glow-pulse { animation: glow-pulse 2.5s ease-in-out infinite; }
+.animate-pop-in     { animation: pop-in     0.45s cubic-bezier(0.34, 1.4,  0.64, 1) both; }
+.animate-hero-float { animation: hero-float 4s   ease-in-out infinite; }
+
+/* XP bar animated fill */
+.xp-bar-fill {
+  animation: xp-fill 1.4s cubic-bezier(0.4, 0, 0.2, 1) both;
+  animation-delay: 0.35s;
+}
+
+/* Card hover lift */
+.card-hover {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+/* Shimmer skeleton */
+.skeleton {
+  background: linear-gradient(90deg,
+    var(--surface-subtle) 25%,
+    var(--surface-elevated) 50%,
+    var(--surface-subtle) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.6s ease-in-out infinite;
+}
+
+/* Approved deed shimmer highlight */
+.deed-approved-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+.deed-approved-shimmer::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    105deg,
+    transparent 30%,
+    rgba(0, 82, 204, 0.045) 50%,
+    transparent 70%
+  );
+  background-size: 250% 100%;
+  animation: shimmer 4s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 0;
+  border-radius: inherit;
+}
+
+/* Confetti pieces */
+.confetti-piece {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  animation: confetti-drift var(--duration, 1.2s) ease-out var(--delay, 0s) both;
+  opacity: 0;
+  top: 30%;
+  pointer-events: none;
+}
+
+/* Staggered slide-up for lists */
+.stagger-1 { animation-delay: 0.05s; }
+.stagger-2 { animation-delay: 0.10s; }
+.stagger-3 { animation-delay: 0.15s; }
+.stagger-4 { animation-delay: 0.20s; }
+.stagger-5 { animation-delay: 0.25s; }
+
+/* Level badge */
+.level-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  font-weight: 800;
+  font-size: 16px;
+  color: white;
+  background: var(--primary);
+  box-shadow: var(--shadow-brand);
+  position: relative;
+  flex-shrink: 0;
+}
+
+.level-badge--2 { background: linear-gradient(135deg, #1b873f, #22a04e); box-shadow: 0 4px 14px rgba(27,135,63,0.35); }
+.level-badge--3 { background: linear-gradient(135deg, #0052cc, #0063f7); box-shadow: var(--shadow-brand); }
+.level-badge--4 { background: linear-gradient(135deg, #6d28d9, #7c3aed); box-shadow: 0 4px 14px rgba(109,40,217,0.35); }
+.level-badge--5 { background: linear-gradient(135deg, #b45309, #d97706); box-shadow: 0 4px 14px rgba(180,83,9,0.35); }
+.level-badge--6 { background: linear-gradient(135deg, #b91c1c, #dc2626); box-shadow: 0 4px 14px rgba(185,28,28,0.35); }
+
+/* Podium rank colors */
+.rank-gold   { background: linear-gradient(135deg, #f59e0b, #fbbf24); color: #7c2d12; box-shadow: 0 4px 14px rgba(245,158,11,0.4); }
+.rank-silver { background: linear-gradient(135deg, #6b7280, #9ca3af); color: #1f2937; box-shadow: 0 4px 14px rgba(107,114,128,0.35); }
+.rank-bronze { background: linear-gradient(135deg, #92400e, #b45309); color: #fff7ed; box-shadow: 0 4px 14px rgba(146,64,14,0.35); }

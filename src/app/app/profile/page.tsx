@@ -167,14 +167,6 @@ export default function ProfilePage() {
 
       <Card>
         <Toggle
-          label={t("profile.elder")}
-          checked={!!userDoc?.elderMode}
-          onChange={(v) => updateField("elderMode", v)}
-        />
-      </Card>
-
-      <Card>
-        <Toggle
           label={t("profile.consent")}
           checked={!!userDoc?.consentLeaderboard}
           onChange={(v) => updateField("consentLeaderboard", v)}

@@ -8,6 +8,7 @@ import { authErrorKey, useAuth } from "@/lib/auth-context";
 import { useI18n } from "@/lib/i18n";
 import { Button } from "@/components/ui/Button";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { TbilisiLogo } from "@/components/TbilisiLogo";
 
 export default function RegisterPage() {
   const { user, loading, signUpWithEmail, signInWithGoogle } = useAuth();
@@ -66,8 +67,10 @@ export default function RegisterPage() {
         </div>
 
         <div className="rounded-2xl bg-surface-elevated border border-line shadow-card p-8">
-          <div className="h-14 w-14 rounded-2xl bg-brand text-white grid place-items-center text-2xl font-bold mx-auto mb-5">
-            ც
+          <div className="flex justify-center mb-6">
+            <div className="h-32 w-32 rounded-3xl bg-brand-soft border border-brand/20 shadow-[var(--shadow-brand)] overflow-hidden p-1">
+              <TbilisiLogo size={120} className="w-full h-full" />
+            </div>
           </div>
           <h1 className="text-2xl font-bold text-center mb-2">
             {t("auth.signup.title")}

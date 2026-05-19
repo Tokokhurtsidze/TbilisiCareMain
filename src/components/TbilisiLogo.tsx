@@ -34,7 +34,7 @@ export function TbilisiLogo({
       alt="Tbilisi City Hall"
       className={className}
       onError={() => setFailed(true)}
-      style={{ objectFit: "contain" }}
+      style={{ objectFit: "contain", transform: "scale(1.65)", transformOrigin: "center" }}
     />
   );
 }
