@@ -5,6 +5,7 @@ import { useEffect, type ReactNode } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { BottomNav } from "@/components/BottomNav";
 import { AppShell } from "@/components/AppShell";
+import { AIChatWidget } from "@/components/AIChatWidget";
 
 export default function AppLayout({ children }: { children: ReactNode }) {
   const { user, loading } = useAuth();
@@ -26,6 +27,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
     <div className="min-h-screen bg-surface-base">
       <AppShell>{children}</AppShell>
       <BottomNav />
+      <AIChatWidget />
     </div>
   );
 }
