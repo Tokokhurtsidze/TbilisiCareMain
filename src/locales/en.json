@@ -310,5 +310,13 @@
   "privacy.r3.title": "Correct inaccurate data",
   "privacy.r3.body": "Ask us to correct any personal information that is wrong or out of date.",
   "privacy.contact.q": "Privacy questions or data requests?",
-  "privacy.contact.sub": "Email us at hello@tbilisicare.ge"
+  "privacy.contact.sub": "Email us at hello@tbilisicare.ge",
+  "ai.button_label": "Ask AI",
+  "ai.title": "TbilisiCare Assistant",
+  "ai.placeholder": "How do I earn points?",
+  "ai.send": "Send",
+  "ai.close": "Close",
+  "ai.welcome": "Hello! I'm the TbilisiCare assistant. Ask me about earning points, uploading photos, or redeeming rewards.",
+  "ai.error": "Something went wrong. Please try again.",
+  "ai.thinking": "Thinking..."
 }

@@ -310,5 +310,13 @@
   "privacy.r3.title": "Исправление данных",
   "privacy.r3.body": "Попросите нас исправить любую неточную личную информацию.",
   "privacy.contact.q": "Вопросы о конфиденциальности?",
-  "privacy.contact.sub": "Напишите нам: hello@tbilisicare.ge"
+  "privacy.contact.sub": "Напишите нам: hello@tbilisicare.ge",
+  "ai.button_label": "Спросить ИИ",
+  "ai.title": "Ассистент TbilisiCare",
+  "ai.placeholder": "Как заработать баллы?",
+  "ai.send": "Отправить",
+  "ai.close": "Закрыть",
+  "ai.welcome": "Привет! Я ассистент TbilisiCare. Спроси меня о баллах, загрузке фото или вознаграждениях.",
+  "ai.error": "Что-то пошло не так. Попробуй снова.",
+  "ai.thinking": "Думаю..."
 }

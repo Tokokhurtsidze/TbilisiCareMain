@@ -310,5 +310,13 @@
   "privacy.r3.title": "არასწორი მონაცემების გასწორება",
   "privacy.r3.body": "სთხოვეთ ჩვენ გამოვასწოროთ ნებისმიერი არასწორი პერსონალური ინფორმაცია.",
   "privacy.contact.q": "კითხვები კონფიდენციალურობის შესახებ?",
-  "privacy.contact.sub": "დაგვიკავშირდით: hello@tbilisicare.ge"
+  "privacy.contact.sub": "დაგვიკავშირდით: hello@tbilisicare.ge",
+  "ai.button_label": "AI დახმარება",
+  "ai.title": "TbilisiCare ასისტენტი",
+  "ai.placeholder": "როგორ ვიშოვო ქულები?",
+  "ai.send": "გაგზავნა",
+  "ai.close": "დახურვა",
+  "ai.welcome": "გამარჯობა! მე ვარ TbilisiCare-ის ასისტენტი. დამისვი კითხვა ქულების, ფოტოს ატვირთვის ან ჯილდოების შესახებ.",
+  "ai.error": "დაფიქსირდა შეცდომა. სცადე თავიდან.",
+  "ai.thinking": "ვფიქრობ..."
 }
