@@ -60,7 +60,7 @@ export async function POST(req: NextRequest) {
         ? "Russian (Русский)"
         : "English";
 
-  const systemContent = `${SYSTEM_PROMPT}\n\n## Language instruction:\nYou MUST respond ONLY in ${localeLabel}. Never switch to another language regardless of what the user writes.`;
+  const systemContent = `STRICT LANGUAGE RULE: You MUST reply ONLY in ${localeLabel}. Do NOT use any other language in your response, not even one word. If the user writes in a different language, still reply ONLY in ${localeLabel}.\n\n${SYSTEM_PROMPT}\n\nREMINDER: Every single word of your reply must be in ${localeLabel}. No exceptions.`;
 
   const upstream = await fetch(
     "https://openrouter.ai/api/v1/chat/completions",

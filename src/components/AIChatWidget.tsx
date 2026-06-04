@@ -139,7 +139,7 @@ export function AIChatWidget() {
                 className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
               >
                 <div
-                  className={`max-w-[80%] rounded-2xl px-3 py-2 text-sm leading-relaxed whitespace-pre-wrap ${
+                  className={`max-w-[80%] rounded-2xl px-3 py-2 text-sm leading-relaxed whitespace-pre-wrap break-words overflow-hidden ${
                     msg.role === "user"
                       ? "bg-brand text-white rounded-br-sm"
                       : "bg-surface-subtle text-ink-primary rounded-bl-sm"
