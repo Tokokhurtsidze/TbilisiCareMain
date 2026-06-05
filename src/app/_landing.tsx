@@ -153,13 +153,13 @@ export default function LandingClient() {
 
           <div className="grid grid-cols-2 gap-3">
             <div className="relative w-full h-52 rounded-2xl shadow-md overflow-hidden">
-              <Image fill sizes="(max-width:1024px) 50vw, 25vw" className="object-cover" src={HERO_PHOTOS[0].src} alt={HERO_PHOTOS[0].alt} />
+              <Image fill priority sizes="(max-width:1024px) 50vw, 25vw" className="object-cover" src={HERO_PHOTOS[0].src} alt={HERO_PHOTOS[0].alt} />
             </div>
             <div className="relative w-full h-52 rounded-2xl shadow-md overflow-hidden mt-8">
               <Image fill sizes="(max-width:1024px) 50vw, 25vw" className="object-cover" src={HERO_PHOTOS[1].src} alt={HERO_PHOTOS[1].alt} />
             </div>
             <div className="relative w-full h-52 rounded-2xl shadow-md overflow-hidden -mt-4">
-              <Image fill sizes="(max-width:1024px) 50vw, 25vw" className="object-cover" src={HERO_PHOTOS[2].src} alt={HERO_PHOTOS[2].alt} />
+              <Image fill priority sizes="(max-width:1024px) 50vw, 25vw" className="object-cover" src={HERO_PHOTOS[2].src} alt={HERO_PHOTOS[2].alt} />
             </div>
             <div className="relative w-full h-52 rounded-2xl shadow-md overflow-hidden mt-4">
               <Image fill sizes="(max-width:1024px) 50vw, 25vw" className="object-cover" src={HERO_PHOTOS[3].src} alt={HERO_PHOTOS[3].alt} />

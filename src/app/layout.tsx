@@ -124,6 +124,11 @@ export default function RootLayout({
     <html lang="ka" suppressHydrationWarning>
       <head>
         <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){var o=console.error.bind(console);console.error=function(){var m=arguments[0];if(typeof m==='string'&&(m.indexOf('bis_skin_checked')!==-1||m.indexOf('bis_register')!==-1||m.indexOf('data-gr-')!==-1||m.indexOf('data-new-gr-')!==-1||m.indexOf('__processed_')!==-1||m.indexOf('Cross-Origin-Opener-Policy')!==-1))return;o.apply(console,arguments)};})();`,
+          }}
+        />
+        <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
           suppressHydrationWarning
