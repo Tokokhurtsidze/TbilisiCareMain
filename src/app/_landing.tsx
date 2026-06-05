@@ -83,7 +83,7 @@ export default function LandingClient() {
 
       {/* ── HEADER ─────────────────────────────────────────────────────── */}
       <header className="sticky top-0 z-30 bg-surface-base/90 backdrop-blur border-b border-line">
-        <div className="max-w-6xl mx-auto flex items-center justify-between px-4 py-3">
+        <div suppressHydrationWarning className="max-w-6xl mx-auto flex items-center justify-between px-4 py-3">
           <TbilisiLogo size={40} className="shrink-0" />
           <div className="flex items-center gap-1.5">
             <button
