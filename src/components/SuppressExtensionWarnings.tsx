@@ -10,7 +10,13 @@ export function SuppressExtensionWarnings() {
     const orig = console.error.bind(console);
     console.error = (...args: unknown[]) => {
       const msg = typeof args[0] === "string" ? args[0] : "";
-      if (msg.includes("bis_skin_checked")) return;
+      if (
+        msg.includes("bis_skin_checked") ||
+        msg.includes("bis_register") ||
+        msg.includes("data-gr-") ||
+        msg.includes("data-new-gr-") ||
+        msg.includes("__processed_")
+      ) return;
       orig(...args);
     };
     return () => {

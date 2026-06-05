@@ -132,7 +132,7 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="https://firebasestorage.googleapis.com" />
       </head>
-      <body>
+      <body suppressHydrationWarning>
         <SuppressExtensionWarnings />
         <ThemeProvider>
           <I18nProvider>
