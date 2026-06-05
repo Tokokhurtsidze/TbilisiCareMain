@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import { collection, query, orderBy, limit, getDocs } from "firebase/firestore";
 import { Crown, Medal, Trophy } from "lucide-react";
 import { db } from "@/lib/firebase";
@@ -12,7 +13,7 @@ import type { UserDoc } from "@/types";
 function Avatar({ user, size = 10 }: { user: UserDoc; size?: number }) {
   const cls = `h-${size} w-${size} rounded-full object-cover bg-surface-subtle`;
   return user.photoURL ? (
-    <img src={user.photoURL} alt="" className={cls} />
+    <Image src={user.photoURL} alt="" width={size * 4} height={size * 4} className={cls} />
   ) : (
     <div className={`${cls} grid place-items-center text-ink-secondary font-bold text-sm`}>
       {user.fullName?.[0] ?? "?"}

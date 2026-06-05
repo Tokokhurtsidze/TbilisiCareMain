@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useParams } from "next/navigation";
 import { ArrowLeft, Send, Award, Trash2 } from "lucide-react";
 import {
@@ -153,9 +154,11 @@ export default function DeedDetailPage() {
       <article className="rounded-2xl bg-surface-elevated border border-line overflow-hidden">
         <header className="flex items-center gap-3 px-4 py-3">
           {deed.authorPhotoURL ? (
-            <img
+            <Image
               src={deed.authorPhotoURL}
               alt=""
+              width={40}
+              height={40}
               className="h-10 w-10 rounded-full object-cover bg-surface-subtle"
             />
           ) : (
@@ -187,9 +190,11 @@ export default function DeedDetailPage() {
               className="w-full max-h-[520px] bg-black"
             />
           ) : (
-            <img
+            <Image
               src={deed.proofUrl}
               alt=""
+              width={1200}
+              height={800}
               className="w-full max-h-[520px] object-cover bg-black"
             />
           )
@@ -231,9 +236,11 @@ export default function DeedDetailPage() {
                 >
                   <div className="flex items-center gap-2 mb-1">
                     {c.authorPhotoURL ? (
-                      <img
+                      <Image
                         src={c.authorPhotoURL}
                         alt=""
+                        width={24}
+                        height={24}
                         className="h-6 w-6 rounded-full object-cover bg-surface-subtle"
                       />
                     ) : (
