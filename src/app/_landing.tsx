@@ -82,10 +82,10 @@ export default function LandingClient() {
     <main className="min-h-screen bg-white dark:bg-surface-base overflow-x-hidden">
 
       {/* ── HEADER ─────────────────────────────────────────────────────── */}
-      <header className="sticky top-0 z-30 bg-surface-base/90 backdrop-blur border-b border-line">
+      <header suppressHydrationWarning className="sticky top-0 z-30 bg-surface-base/90 backdrop-blur border-b border-line">
         <div suppressHydrationWarning className="max-w-6xl mx-auto flex items-center justify-between px-4 py-3">
           <TbilisiLogo size={40} className="shrink-0" />
-          <div className="flex items-center gap-1.5">
+          <div suppressHydrationWarning className="flex items-center gap-1.5">
             <button
               onClick={cycleLocale}
               className="h-8 px-2.5 rounded-lg text-xs font-bold tracking-wide text-ink-secondary hover:text-brand hover:bg-surface-subtle transition-colors"
