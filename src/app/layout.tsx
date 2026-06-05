@@ -3,6 +3,7 @@ import "./globals.css";
 import { AuthProvider } from "@/lib/auth-context";
 import { I18nProvider } from "@/lib/i18n";
 import { ThemeProvider } from "@/lib/theme-context";
+import { SuppressExtensionWarnings } from "@/components/SuppressExtensionWarnings";
 
 export const metadata: Metadata = {
   title: {
@@ -132,6 +133,7 @@ export default function RootLayout({
         <link rel="dns-prefetch" href="https://firebasestorage.googleapis.com" />
       </head>
       <body>
+        <SuppressExtensionWarnings />
         <ThemeProvider>
           <I18nProvider>
             <AuthProvider>{children}</AuthProvider>
