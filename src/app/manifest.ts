@@ -12,9 +12,8 @@ export default function manifest(): MetadataRoute.Manifest {
     orientation: "portrait",
     categories: ["social", "lifestyle", "utilities"],
     icons: [
-      { src: "/icon.png",        sizes: "64x64",   type: "image/png" },
-      { src: "/icon.png",        sizes: "192x192", type: "image/png" },
-      { src: "/icon.png",        sizes: "512x512", type: "image/png", purpose: "maskable" },
+      { src: "/icon",  sizes: "64x64",   type: "image/png" },
+      { src: "/icon",  sizes: "192x192", type: "image/png" },
     ],
   };
 }

@@ -27,14 +27,28 @@ export function TbilisiLogo({
     );
   }
   return (
-    <img
-      src={TBILISI_LOGO_URL}
-      width={size}
-      height={size}
-      alt="Tbilisi City Hall"
+    <div
+      suppressHydrationWarning
       className={className}
-      onError={() => setFailed(true)}
-      style={{ objectFit: "contain", transform: "scale(1.65)", transformOrigin: "center" }}
-    />
+      style={{
+        width: size,
+        height: size,
+        borderRadius: "50%",
+        overflow: "hidden",
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        flexShrink: 0,
+      }}
+    >
+      <img
+        src={TBILISI_LOGO_URL}
+        width={size * 1.6}
+        height={size * 1.6}
+        alt="Tbilisi City Hall"
+        onError={() => setFailed(true)}
+        style={{ objectFit: "contain", transform: "scale(1.65)", transformOrigin: "center" }}
+      />
+    </div>
   );
 }
