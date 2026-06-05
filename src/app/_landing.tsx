@@ -23,7 +23,6 @@ import {
 } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { Button } from "@/components/ui/Button";
-import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { TbilisiLogo } from "@/components/TbilisiLogo";
 import { DEMO_NEWS } from "@/lib/demo-data";
@@ -72,19 +71,28 @@ const PARTNERS: PartnerEntry[] = [
 ];
 
 export default function LandingClient() {
-  const { t, locale } = useI18n();
+  const { t, locale, setLocale } = useI18n();
+  const LOCALES = ["ka", "en", "ru"] as const;
+  const cycleLocale = () => {
+    const next = LOCALES[(LOCALES.indexOf(locale) + 1) % LOCALES.length];
+    setLocale(next);
+  };
 
   return (
     <main className="min-h-screen bg-white dark:bg-surface-base overflow-x-hidden">
 
       {/* ── HEADER ─────────────────────────────────────────────────────── */}
       <header className="sticky top-0 z-30 bg-surface-base/90 backdrop-blur border-b border-line">
-        <div className="max-w-6xl mx-auto flex items-center justify-between px-5 py-3">
-          <div className="flex items-center gap-2.5">
-            <TbilisiLogo size={48} className="shrink-0" />
-          </div>
-          <div className="flex items-center gap-2">
-            <LanguageSwitcher />
+        <div className="max-w-6xl mx-auto flex items-center justify-between px-4 py-3">
+          <TbilisiLogo size={40} className="shrink-0" />
+          <div className="flex items-center gap-1.5">
+            <button
+              onClick={cycleLocale}
+              className="h-8 px-2.5 rounded-lg text-xs font-bold tracking-wide text-ink-secondary hover:text-brand hover:bg-surface-subtle transition-colors"
+              aria-label="Switch language"
+            >
+              {locale.toUpperCase()}
+            </button>
             <ThemeToggle />
             <Link href="/auth/login" className="hidden sm:inline-flex">
               <Button variant="ghost" size="sm">{t("auth.signin")}</Button>
