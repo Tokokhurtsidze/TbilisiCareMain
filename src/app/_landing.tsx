@@ -84,7 +84,7 @@ export default function LandingClient() {
             <TbilisiLogo size={48} className="shrink-0" />
           </div>
           <div className="flex items-center gap-2">
-            <div className="hidden sm:block"><LanguageSwitcher /></div>
+            <LanguageSwitcher />
             <ThemeToggle />
             <Link href="/auth/login" className="hidden sm:inline-flex">
               <Button variant="ghost" size="sm">{t("auth.signin")}</Button>
@@ -138,7 +138,7 @@ export default function LandingClient() {
         </div>
 
         {/* Right — staggered photo collage */}
-        <div className="relative hidden lg:block">
+        <div className="relative">
           {/* Decorative border frames (like the reference) */}
           <div className="absolute top-4 left-4 w-[48%] h-[48%] border-2 border-brand/40 rounded-2xl pointer-events-none z-10" />
           <div className="absolute bottom-0 right-2 w-[50%] h-[52%] border-2 border-brand/30 rounded-2xl pointer-events-none z-10" />
