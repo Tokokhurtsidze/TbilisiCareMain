@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { UserAvatar } from "@/components/UserAvatar";
 import { useParams } from "next/navigation";
 import { ArrowLeft, Send, Award, Trash2 } from "lucide-react";
 import {
@@ -153,19 +154,7 @@ export default function DeedDetailPage() {
 
       <article className="rounded-2xl bg-surface-elevated border border-line overflow-hidden">
         <header className="flex items-center gap-3 px-4 py-3">
-          {deed.authorPhotoURL ? (
-            <Image
-              src={deed.authorPhotoURL}
-              alt=""
-              width={40}
-              height={40}
-              className="h-10 w-10 rounded-full object-cover bg-surface-subtle"
-            />
-          ) : (
-            <div className="h-10 w-10 rounded-full bg-surface-subtle grid place-items-center font-semibold">
-              {deed.authorName?.[0] ?? "?"}
-            </div>
-          )}
+          <UserAvatar src={deed.authorPhotoURL} size={10} />
           <div className="flex-1 min-w-0">
             <p className="font-medium truncate">{deed.authorName}</p>
             <p className="text-xs text-ink-secondary">
@@ -235,17 +224,7 @@ export default function DeedDetailPage() {
                   className="rounded-xl bg-surface-elevated border border-line px-4 py-3"
                 >
                   <div className="flex items-center gap-2 mb-1">
-                    {c.authorPhotoURL ? (
-                      <Image
-                        src={c.authorPhotoURL}
-                        alt=""
-                        width={24}
-                        height={24}
-                        className="h-6 w-6 rounded-full object-cover bg-surface-subtle"
-                      />
-                    ) : (
-                      <div className="h-6 w-6 rounded-full bg-surface-subtle" />
-                    )}
+                    <UserAvatar src={c.authorPhotoURL} size={6} />
                     <span className="text-sm font-medium">{c.authorName}</span>
                     <span className="text-xs text-ink-secondary ml-auto">
                       {relativeTime(toMs(c.createdAt), locale)}

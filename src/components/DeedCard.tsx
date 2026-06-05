@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { MessageCircle, Award } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
+import { UserAvatar } from "@/components/UserAvatar";
 import { toMs, relativeTime } from "@/lib/utils";
 import { LEVELS, type Deed } from "@/types";
 
@@ -14,17 +15,7 @@ export function DeedCard({ deed }: { deed: Deed }) {
   return (
     <article className="rounded-2xl bg-surface-elevated border border-line overflow-hidden deed-approved-shimmer card-hover">
       <header className="relative z-10 flex items-center gap-3 px-4 py-3.5">
-        {deed.authorPhotoURL ? (
-          <img
-            src={deed.authorPhotoURL}
-            alt=""
-            className="h-10 w-10 rounded-full object-cover bg-surface-subtle ring-2 ring-surface-base"
-          />
-        ) : (
-          <div className="h-10 w-10 rounded-full bg-brand-soft grid place-items-center text-brand font-bold ring-2 ring-surface-base">
-            {deed.authorName?.[0] ?? "?"}
-          </div>
-        )}
+        <UserAvatar src={deed.authorPhotoURL} size={10} className="ring-2 ring-surface-base" />
         <div className="flex-1 min-w-0">
           <p className="font-semibold truncate leading-tight">{deed.authorName}</p>
           <p className="text-xs text-ink-secondary mt-0.5">

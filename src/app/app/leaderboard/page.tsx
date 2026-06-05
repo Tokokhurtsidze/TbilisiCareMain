@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Image from "next/image";
+import { UserAvatar } from "@/components/UserAvatar";
 import { collection, query, orderBy, limit, getDocs } from "firebase/firestore";
 import { Crown, Medal, Trophy } from "lucide-react";
 import { db } from "@/lib/firebase";
@@ -10,15 +10,8 @@ import { useI18n } from "@/lib/i18n";
 import { DEMO_USERS } from "@/lib/demo-data";
 import type { UserDoc } from "@/types";
 
-function Avatar({ user, size = 10 }: { user: UserDoc; size?: number }) {
-  const cls = `h-${size} w-${size} rounded-full object-cover bg-surface-subtle`;
-  return user.photoURL ? (
-    <Image src={user.photoURL} alt="" width={size * 4} height={size * 4} className={cls} />
-  ) : (
-    <div className={`${cls} grid place-items-center text-ink-secondary font-bold text-sm`}>
-      {user.fullName?.[0] ?? "?"}
-    </div>
-  );
+function Avatar({ user, size = 10 }: { user: UserDoc; size?: 6 | 8 | 9 | 10 | 12 | 14 | 20 }) {
+  return <UserAvatar src={user.photoURL} size={size} />;
 }
 
 function PodiumCard({
@@ -49,7 +42,6 @@ function PodiumCard({
         {isYou && (
           <span className="text-[10px] text-brand font-bold">({label})</span>
         )}
-        <p className="text-xs text-ink-secondary mt-0.5">{u.district ?? "Tbilisi"}</p>
         <p className={`font-extrabold mt-2 tabular-nums ${isFirst ? "text-xl text-brand" : "text-base text-ink-primary"}`}>
           {u.carePoints.toLocaleString()}
         </p>
@@ -138,7 +130,6 @@ export default function LeaderboardPage() {
                   {u.id === user?.uid && (
                     <span className="ml-2 text-xs text-brand font-bold">({youLabel})</span>
                   )}
-                  <p className="text-xs text-ink-secondary">{u.district ?? "Tbilisi"}</p>
                 </div>
               </div>
               <span className="text-brand font-bold tabular-nums text-sm">{u.carePoints.toLocaleString()}</span>

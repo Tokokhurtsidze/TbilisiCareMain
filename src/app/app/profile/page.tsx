@@ -12,6 +12,7 @@ import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { UserAvatar } from "@/components/UserAvatar";
 import { levelFor } from "@/types";
 
 type EditMode = null | "name" | "email" | "password";
@@ -62,17 +63,7 @@ export default function ProfilePage() {
       <Card>
         <div className="flex items-center gap-4">
           <div className="relative">
-            {userDoc?.photoURL ? (
-              <img
-                src={userDoc.photoURL}
-                alt=""
-                className="h-20 w-20 rounded-full object-cover bg-surface-subtle"
-              />
-            ) : (
-              <div className="h-20 w-20 rounded-full bg-surface-subtle grid place-items-center text-2xl font-semibold">
-                {userDoc?.fullName?.[0] ?? "?"}
-              </div>
-            )}
+            <UserAvatar src={userDoc?.photoURL} size={20} />
             <button
               onClick={() => fileInput.current?.click()}
               disabled={uploading}

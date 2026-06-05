@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, Pencil, Send, Trash2, User } from "lucide-react";
+import { ArrowLeft, Pencil, Send, Trash2 } from "lucide-react";
+import { UserAvatar } from "@/components/UserAvatar";
 import {
   addDoc,
   collection,
@@ -164,17 +165,7 @@ export default function PostDetailPage() {
 
       <article className="rounded-2xl bg-surface-elevated border border-line overflow-hidden">
         <header className="flex items-center gap-3 px-4 py-3">
-          {post.authorPhotoURL ? (
-            <img
-              src={post.authorPhotoURL}
-              alt=""
-              className="h-10 w-10 rounded-full object-cover bg-surface-subtle"
-            />
-          ) : (
-            <div className="h-10 w-10 rounded-full bg-surface-subtle grid place-items-center text-ink-secondary">
-              <User size={18} />
-            </div>
-          )}
+          <UserAvatar src={post.authorPhotoURL} size={10} />
           <div className="flex-1 min-w-0">
             <p className="font-medium truncate">{post.authorName}</p>
             <p className="text-xs text-ink-secondary">
@@ -258,15 +249,7 @@ export default function PostDetailPage() {
                   className="rounded-xl bg-surface-elevated border border-line px-4 py-3"
                 >
                   <div className="flex items-center gap-2 mb-1">
-                    {c.authorPhotoURL ? (
-                      <img
-                        src={c.authorPhotoURL}
-                        alt=""
-                        className="h-6 w-6 rounded-full object-cover bg-surface-subtle"
-                      />
-                    ) : (
-                      <div className="h-6 w-6 rounded-full bg-surface-subtle" />
-                    )}
+                    <UserAvatar src={c.authorPhotoURL} size={6} />
                     <span className="text-sm font-medium">{c.authorName}</span>
                     <span className="text-xs text-ink-secondary ml-auto">
                       {relativeTime(toMs(c.createdAt), locale)}

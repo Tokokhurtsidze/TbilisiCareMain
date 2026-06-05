@@ -153,16 +153,16 @@ export default function LandingClient() {
 
           <div className="grid grid-cols-2 gap-3">
             <div className="relative w-full h-52 rounded-2xl shadow-md overflow-hidden">
-              <Image fill className="object-cover" src={HERO_PHOTOS[0].src} alt={HERO_PHOTOS[0].alt} />
+              <Image fill sizes="(max-width:1024px) 50vw, 25vw" className="object-cover" src={HERO_PHOTOS[0].src} alt={HERO_PHOTOS[0].alt} />
             </div>
             <div className="relative w-full h-52 rounded-2xl shadow-md overflow-hidden mt-8">
-              <Image fill className="object-cover" src={HERO_PHOTOS[1].src} alt={HERO_PHOTOS[1].alt} />
+              <Image fill sizes="(max-width:1024px) 50vw, 25vw" className="object-cover" src={HERO_PHOTOS[1].src} alt={HERO_PHOTOS[1].alt} />
             </div>
             <div className="relative w-full h-52 rounded-2xl shadow-md overflow-hidden -mt-4">
-              <Image fill className="object-cover" src={HERO_PHOTOS[2].src} alt={HERO_PHOTOS[2].alt} />
+              <Image fill sizes="(max-width:1024px) 50vw, 25vw" className="object-cover" src={HERO_PHOTOS[2].src} alt={HERO_PHOTOS[2].alt} />
             </div>
             <div className="relative w-full h-52 rounded-2xl shadow-md overflow-hidden mt-4">
-              <Image fill className="object-cover" src={HERO_PHOTOS[3].src} alt={HERO_PHOTOS[3].alt} />
+              <Image fill sizes="(max-width:1024px) 50vw, 25vw" className="object-cover" src={HERO_PHOTOS[3].src} alt={HERO_PHOTOS[3].alt} />
             </div>
           </div>
 
@@ -196,7 +196,7 @@ export default function LandingClient() {
         {/* Photo with blue accent */}
         <div className="relative hidden lg:block">
           <div className="relative w-full h-[420px] rounded-3xl shadow-lg overflow-hidden">
-            <Image fill className="object-cover" src="https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=680&h=520&fit=crop&q=80" alt="Tbilisi community" />
+            <Image fill sizes="(max-width:1024px) 100vw, 50vw" className="object-cover" src="https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=680&h=520&fit=crop&q=80" alt="Tbilisi community" />
           </div>
           {/* Blue accent rectangle (bottom-left, like reference) */}
           <div className="absolute -bottom-5 -left-5 w-28 h-28 bg-brand rounded-2xl -z-10" />
@@ -274,6 +274,7 @@ export default function LandingClient() {
               <div className="relative h-44 overflow-hidden">
                 <Image
                   fill
+                  sizes="(max-width:640px) 100vw, 33vw"
                   src={NEWS_PHOTOS[idx % NEWS_PHOTOS.length]}
                   alt=""
                   className="object-cover group-hover:scale-105 transition-transform duration-500"
@@ -332,6 +333,7 @@ export default function LandingClient() {
           {/* Background photo with overlay */}
           <Image
             fill
+            sizes="100vw"
             src="https://images.unsplash.com/photo-1559027615-cd4628902d4a?w=1200&h=500&fit=crop&q=60"
             alt=""
             aria-hidden
@@ -394,11 +396,10 @@ function Quote({ text, author, seed }: { text: string; author: string; seed: str
       <div className="text-brand text-3xl font-serif leading-none mb-3 opacity-30">&ldquo;</div>
       <blockquote className="text-sm leading-relaxed text-ink-primary">{text}</blockquote>
       <figcaption className="mt-5 flex items-center gap-3 pt-4 border-t border-line">
-        <Image
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
           src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(seed)}`}
           alt=""
-          width={36}
-          height={36}
           className="h-9 w-9 rounded-full bg-surface-subtle"
         />
         <span className="text-sm font-medium text-ink-secondary">{author}</span>

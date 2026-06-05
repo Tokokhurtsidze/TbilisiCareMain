@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { MessageCircle, Pencil, Trash2, User } from "lucide-react";
+import { MessageCircle, Pencil, Trash2 } from "lucide-react";
+import { UserAvatar } from "@/components/UserAvatar";
 import { deleteDoc, doc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useAuth } from "@/lib/auth-context";
@@ -37,17 +38,7 @@ export function PostCard({ post }: { post: Post }) {
   return (
     <article className="rounded-2xl bg-surface-elevated border border-line overflow-hidden card-hover">
       <header className="flex items-center gap-3 px-4 py-3.5">
-        {post.authorPhotoURL ? (
-          <img
-            src={post.authorPhotoURL}
-            alt=""
-            className="h-10 w-10 rounded-full object-cover bg-surface-subtle ring-2 ring-surface-base"
-          />
-        ) : (
-          <div className="h-10 w-10 rounded-full bg-brand-soft grid place-items-center text-brand ring-2 ring-surface-base">
-            <User size={17} />
-          </div>
-        )}
+        <UserAvatar src={post.authorPhotoURL} size={10} className="ring-2 ring-surface-base" />
         <div className="flex-1 min-w-0">
           <p className="font-semibold truncate leading-tight">{post.authorName}</p>
           <p className="text-xs text-ink-secondary mt-0.5">

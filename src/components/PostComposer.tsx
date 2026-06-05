@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Image as ImageIcon, Video, X, Send, User } from "lucide-react";
+import { Image as ImageIcon, Video, X, Send } from "lucide-react";
+import { UserAvatar } from "@/components/UserAvatar";
 import {
   addDoc,
   collection,
@@ -136,17 +137,7 @@ export function PostComposer() {
   return (
     <div className="rounded-2xl bg-surface-elevated border border-line p-4">
       <div className="flex gap-3">
-        {userDoc?.photoURL ? (
-          <img
-            src={userDoc.photoURL}
-            alt=""
-            className="h-10 w-10 rounded-full object-cover bg-surface-subtle shrink-0"
-          />
-        ) : (
-          <div className="h-10 w-10 rounded-full bg-surface-subtle grid place-items-center text-ink-secondary shrink-0">
-            <User size={18} />
-          </div>
-        )}
+        <UserAvatar src={userDoc?.photoURL} size={10} className="shrink-0" />
 
         <div className="flex-1 min-w-0">
           {!expanded ? (

@@ -6,7 +6,6 @@ import { useState, type ReactNode } from "react";
 import {
   Menu,
   X,
-  User,
   Home,
   PlusCircle,
   Trophy,
@@ -18,6 +17,7 @@ import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth-context";
 import { AppSidebar } from "./AppSidebar";
 import { TbilisiLogo } from "./TbilisiLogo";
+import { UserAvatar } from "./UserAvatar";
 
 const HEADER_LINKS: { href: string; Icon: LucideIcon; key: string }[] = [
   { href: "/app", Icon: Home, key: "nav.home" },
@@ -79,15 +79,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             className="h-9 w-9 rounded-full bg-surface-subtle grid place-items-center overflow-hidden hover:ring-2 hover:ring-brand hover:ring-offset-1 hover:ring-offset-surface-base transition-all duration-150"
             aria-label={t("profile.title")}
           >
-            {userDoc?.photoURL ? (
-              <img
-                src={userDoc.photoURL}
-                alt=""
-                className="h-full w-full object-cover"
-              />
-            ) : (
-              <User size={17} className="text-ink-secondary" />
-            )}
+            <UserAvatar src={userDoc?.photoURL} size={9} />
           </Link>
         </div>
       </header>
