@@ -14,8 +14,7 @@ import {
   reauthenticateWithCredential,
   sendPasswordResetEmail,
   signInWithEmailAndPassword,
-  getRedirectResult,
-  signInWithRedirect,
+  signInWithPopup,
   signOut as fbSignOut,
   updateEmail,
   updatePassword,
@@ -60,7 +59,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     initAnalytics();
-    getRedirectResult(auth()).catch(() => {});
     const unsubAuth = onAuthStateChanged(auth(), async (fbUser) => {
       setUser(fbUser);
       if (!fbUser) {
@@ -123,7 +121,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     userDoc,
     loading,
     signInWithGoogle: async () => {
-      await signInWithRedirect(auth(), googleProvider);
+      await signInWithPopup(auth(), googleProvider);
     },
     signInWithEmail: async (email, password) => {
       await signInWithEmailAndPassword(auth(), email, password);
