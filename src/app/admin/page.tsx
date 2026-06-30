@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { getAdminSession } from "@/lib/admin-auth";
 import { adminDb } from "@/lib/firebase-admin";
 import { FileCheck, Users, Clock } from "lucide-react";
+import { BulkWelcomeButton } from "./BulkWelcomeButton";
 
 async function getStats() {
   const db = adminDb();
@@ -50,6 +51,8 @@ export default async function AdminDashboard() {
           </div>
         ))}
       </div>
+
+      <BulkWelcomeButton />
     </div>
   );
 }
