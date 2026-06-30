@@ -84,6 +84,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             createdAt: Date.now(),
           };
           await setDoc(ref, { ...fresh, createdAt: serverTimestamp() });
+          // Send welcome email for all new users (email/password + Google)
+          if (fbUser.email) {
+            fetch("/api/auth/welcome-email", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                email: fbUser.email,
+                name: fbUser.displayName ?? "",
+              }),
+            }).catch((e) => console.error("[welcome-email]", e));
+          }
         }
       } catch (err) {
         console.error("[auth] failed to load user doc", err);
