@@ -36,7 +36,7 @@
 Append to `.env.local`:
 ```
 # --- OpenRouter AI ---
-OPENROUTER_API_KEY=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
+OPENROUTER_API_KEY=<your-openrouter-key>
 ```
 
 - [ ] **Step 2: Add placeholder to `.env.local.example`**
