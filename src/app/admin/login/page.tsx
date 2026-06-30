@@ -35,7 +35,7 @@ export default function AdminLoginPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),
       });
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
       if (!res.ok) {
         if (res.status === 429) {
           setRetryAfter(data.retryAfter ?? 60);
@@ -43,7 +43,7 @@ export default function AdminLoginPage() {
         } else if (res.status === 403) {
           setError("Email not authorized as admin.");
         } else {
-          setError("Failed to send OTP. Try again.");
+          setError(data.error ?? "Failed to send OTP. Try again.");
         }
         return;
       }
@@ -63,7 +63,7 @@ export default function AdminLoginPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, otp }),
       });
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
       if (!res.ok) {
         const msgs: Record<string, string> = {
           invalid_otp: "Wrong code. Check your email.",

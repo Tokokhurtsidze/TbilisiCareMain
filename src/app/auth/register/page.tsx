@@ -40,6 +40,12 @@ export default function RegisterPage() {
     setBusy(true);
     try {
       await signUpWithEmail(email, password, name);
+      // fire-and-forget — don't block registration on email success
+      fetch("/api/auth/welcome-email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, name }),
+      }).catch(() => {});
     } catch (e) {
       setErr(t(authErrorKey(e)));
     } finally {

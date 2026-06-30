@@ -5,41 +5,47 @@ import { sendOtpEmail } from "@/lib/mailer";
 import { adminDb } from "@/lib/firebase-admin";
 
 export async function POST(req: NextRequest) {
-  const body = await req.json().catch(() => ({}));
-  const email: string = (body.email ?? "").trim().toLowerCase();
+  try {
+    const body = await req.json().catch(() => ({}));
+    const email: string = (body.email ?? "").trim().toLowerCase();
 
-  if (!email) {
-    return NextResponse.json({ error: "missing_email" }, { status: 400 });
-  }
-
-  if (!isAdminEmail(email)) {
-    return NextResponse.json({ error: "forbidden" }, { status: 403 });
-  }
-
-  const db = adminDb();
-  const ref = db.collection("adminOtps").doc(email);
-  const snap = await ref.get();
-
-  if (snap.exists) {
-    const data = snap.data()!;
-    if (!data.used && data.expiresAt > Date.now()) {
-      const retryAfter = Math.ceil((data.expiresAt - Date.now()) / 1000);
-      return NextResponse.json(
-        { error: "rate_limited", retryAfter },
-        { status: 429 }
-      );
+    if (!email) {
+      return NextResponse.json({ error: "missing_email" }, { status: 400 });
     }
+
+    if (!isAdminEmail(email)) {
+      return NextResponse.json({ error: "forbidden" }, { status: 403 });
+    }
+
+    const db = adminDb();
+    const ref = db.collection("adminOtps").doc(email);
+    const snap = await ref.get();
+
+    if (snap.exists) {
+      const data = snap.data()!;
+      if (!data.used && data.expiresAt > Date.now()) {
+        const retryAfter = Math.ceil((data.expiresAt - Date.now()) / 1000);
+        return NextResponse.json(
+          { error: "rate_limited", retryAfter },
+          { status: 429 }
+        );
+      }
+    }
+
+    const otp = String(randomInt(100000, 999999));
+
+    await ref.set({
+      otp,
+      expiresAt: Date.now() + 10 * 60 * 1000,
+      used: false,
+    });
+
+    await sendOtpEmail(email, otp);
+
+    return NextResponse.json({ ok: true });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    console.error("[send-otp]", message);
+    return NextResponse.json({ error: message }, { status: 500 });
   }
-
-  const otp = String(randomInt(100000, 999999));
-
-  await ref.set({
-    otp,
-    expiresAt: Date.now() + 10 * 60 * 1000,
-    used: false,
-  });
-
-  await sendOtpEmail(email, otp);
-
-  return NextResponse.json({ ok: true });
 }

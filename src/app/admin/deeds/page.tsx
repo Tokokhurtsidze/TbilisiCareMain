@@ -10,10 +10,11 @@ async function getDeeds(filter: FilterTab) {
   const snap = await db
     .collection("deeds")
     .where("status", "==", filter)
-    .orderBy("createdAt", "desc")
     .limit(50)
     .get();
-  return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+  return snap.docs
+    .map((d) => ({ id: d.id, ...d.data() }))
+    .sort((a: any, b: any) => (b.createdAt ?? 0) - (a.createdAt ?? 0));
 }
 
 export default async function AdminDeedsPage({
