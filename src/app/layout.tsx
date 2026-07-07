@@ -23,6 +23,9 @@ export const metadata: Metadata = {
     "community",
     "TbilisiCare",
   ],
+  verification: {
+    google: "KzYprA3bGzT1RgS758XKzsa4bwlZLjTAQ9r4DcnQzQ4",
+  },
   authors: [{ name: "TbilisiCare" }],
   creator: "TbilisiCare",
   robots: {
