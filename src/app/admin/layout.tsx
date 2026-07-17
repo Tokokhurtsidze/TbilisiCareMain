@@ -2,11 +2,12 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { LayoutDashboard, FileCheck, Users, LogOut } from "lucide-react";
+import { LayoutDashboard, FileCheck, Users, Megaphone, LogOut } from "lucide-react";
 
 const NAV = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
   { href: "/admin/deeds", label: "Deeds", icon: FileCheck, exact: false },
+  { href: "/admin/official-posts", label: "Official Posts", icon: Megaphone, exact: false },
   { href: "/admin/users", label: "Users", icon: Users, exact: false },
 ];
 

@@ -170,7 +170,22 @@ export default function DeedDetailPage() {
           <p className="px-4 pb-2 text-sm whitespace-pre-wrap">{deed.caption}</p>
         )}
 
-        {deed.proofUrl ? (
+        {deed.proofUrl && deed.proofBeforeUrl ? (
+          <div className="grid grid-cols-2 gap-0.5 bg-black">
+            <div className="relative">
+              <Image src={deed.proofBeforeUrl} alt="" width={600} height={520} className="w-full max-h-[520px] object-cover" />
+              <span className="absolute top-2 left-2 text-[10px] font-bold uppercase tracking-wide bg-black/60 text-white px-2 py-1 rounded-md">
+                {t("submit.before")}
+              </span>
+            </div>
+            <div className="relative">
+              <Image src={deed.proofUrl} alt="" width={600} height={520} className="w-full max-h-[520px] object-cover" />
+              <span className="absolute top-2 left-2 text-[10px] font-bold uppercase tracking-wide bg-black/60 text-white px-2 py-1 rounded-md">
+                {t("submit.after")}
+              </span>
+            </div>
+          </div>
+        ) : deed.proofUrl ? (
           deed.proofType === "video" ? (
             <video
               src={deed.proofUrl}

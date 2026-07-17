@@ -5,7 +5,6 @@ import { usePathname } from "next/navigation";
 import {
   Home,
   Trophy,
-  ShoppingBag,
   User,
   PlusCircle,
   ExternalLink,
@@ -18,7 +17,6 @@ const PRIMARY = [
   { href: "/app", icon: Home, key: "nav.home" },
   { href: "/app/leaderboard", icon: Trophy, key: "nav.leaderboard" },
   { href: "/app/submit", icon: PlusCircle, key: "nav.submit" },
-  { href: "/app/marketplace", icon: ShoppingBag, key: "nav.market" },
   { href: "/app/profile", icon: User, key: "nav.profile" },
 ] as const;
 

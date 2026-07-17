@@ -44,8 +44,8 @@ function NewsCard({ item, ago }: { item: NewsItem; ago: string }) {
         className={`h-28 bg-gradient-to-br ${NEWS_GRADIENTS[item.category]} grid place-items-center`}
       >
         {item.category === "city" ? (
-          <div className="bg-white/95 rounded-full p-2 grid place-items-center">
-            <TbilisiLogo size={42} />
+          <div className="bg-white/95 rounded-xl px-3 py-2 grid place-items-center">
+            <TbilisiLogo size={22} />
           </div>
         ) : (
           (() => {

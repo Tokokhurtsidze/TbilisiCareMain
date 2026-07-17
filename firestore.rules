@@ -13,9 +13,10 @@ service cloud.firestore {
     match /users/{uid} {
       allow read: if signedIn();
       allow create: if isSelf(uid);
-      // MVP: allow self to update own points. PRODUCTION: lock this and move to a Cloud Function
-      // triggered by deeds/onCreate so points cannot be tampered with from the client.
-      allow update: if isSelf(uid);
+      // carePoints/level are only ever written server-side (Admin SDK, after AI
+      // or human deed validation) — the client cannot self-award points.
+      allow update: if isSelf(uid)
+        && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['carePoints', 'level']);
       allow delete: if false;
     }
 
@@ -25,13 +26,17 @@ service cloud.firestore {
         resource.data.status == 'approved' ||
         resource.data.userId == request.auth.uid
       );
+      // Deeds always start pending and unvalidated — approval/rejection is
+      // only ever decided server-side (AI validation route or admin panel).
       allow create: if signedIn()
-        && request.resource.data.userId == request.auth.uid;
-      // Owner can update freely; anyone signed-in can update ONLY commentCount
-      // (so other users' comments bump the denormalized count).
-      // PRODUCTION: replace with a Cloud Function trigger on comment create/delete.
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.status == 'pending'
+        && request.resource.data.cvConfidence == null;
+      // Owner may only edit their caption while pending; status/points/cvConfidence
+      // are server-only. Anyone signed-in can bump commentCount for their comment.
       allow update: if signedIn() && (
-        resource.data.userId == request.auth.uid ||
+        (resource.data.userId == request.auth.uid &&
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['caption'])) ||
         request.resource.data.diff(resource.data).affectedKeys().hasOnly(['commentCount'])
       );
       allow delete: if false;
@@ -50,45 +55,13 @@ service cloud.firestore {
       }
     }
 
-    // Posts — free-form text + optional media. Public read for any signed-in user.
-    match /posts/{postId} {
-      allow read: if signedIn();
-      allow create: if signedIn()
-        && request.resource.data.userId == request.auth.uid
-        && request.resource.data.text is string
-        && request.resource.data.text.size() > 0
-        && request.resource.data.text.size() <= 2000;
-      // Owner can update freely; anyone signed-in can update ONLY commentCount.
-      allow update: if signedIn() && (
-        resource.data.userId == request.auth.uid ||
-        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['commentCount'])
-      );
-      allow delete: if signedIn() && resource.data.userId == request.auth.uid;
-
-      match /comments/{commentId} {
-        allow read: if signedIn();
-        allow create: if signedIn()
-          && request.resource.data.userId == request.auth.uid
-          && request.resource.data.text is string
-          && request.resource.data.text.size() > 0
-          && request.resource.data.text.size() <= 500;
-        allow update: if false;
-        allow delete: if signedIn() && resource.data.userId == request.auth.uid;
-      }
-    }
-
-    match /rewards/{id} {
+    // Official posts — City Hall announcements + AI deed-doer spotlights.
+    // Never client-writable: authored only by the admin panel or the AI
+    // validation route, both via the Admin SDK (which bypasses these rules).
+    match /officialPosts/{id} {
       allow read: if signedIn();
       allow write: if false;
     }
 
-    match /redemptions/{id} {
-      allow read: if signedIn() && resource.data.userId == request.auth.uid;
-      allow create: if signedIn()
-        && request.resource.data.userId == request.auth.uid
-        && request.resource.data.costInPoints is int
-        && request.resource.data.costInPoints > 0;
-      allow update, delete: if false;
-    }
   }
 }

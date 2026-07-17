@@ -1,4 +1,10 @@
-import type { Comment, Deed, OfficialPost, Post, ProofType, UserDoc } from "@/types";
+import type { Comment, Deed, OfficialPost, ProofType, UserDoc } from "@/types";
+
+// Single flip to remove every fake/seed citizen and post before a real launch —
+// set NEXT_PUBLIC_SHOW_DEMO_CONTENT=false. Consumers should read this instead
+// of importing the DEMO_* arrays directly where the content is user-facing
+// (leaderboard rows, feed posts) so nothing hardcodes fake people permanently.
+export const SHOW_DEMO_CONTENT = process.env.NEXT_PUBLIC_SHOW_DEMO_CONTENT !== "false";
 
 const av = (seed: string) =>
   `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(seed)}`;
@@ -36,6 +42,7 @@ export const DEMO_USERS: UserDoc[] = [
     reputationScore: 92,
     elderMode: false,
     consentLeaderboard: true,
+    consentSpotlight: true,
     photoURL: av("giorgi-beridze"),
     createdAt: Date.now() - 1000 * 60 * 60 * 24 * 220,
   },
@@ -49,6 +56,7 @@ export const DEMO_USERS: UserDoc[] = [
     reputationScore: 89,
     elderMode: false,
     consentLeaderboard: true,
+    consentSpotlight: true,
     photoURL: av("nino-kapanadze"),
     createdAt: Date.now() - 1000 * 60 * 60 * 24 * 180,
   },
@@ -62,6 +70,7 @@ export const DEMO_USERS: UserDoc[] = [
     reputationScore: 87,
     elderMode: false,
     consentLeaderboard: true,
+    consentSpotlight: true,
     photoURL: av("levan-tsiklauri"),
     createdAt: Date.now() - 1000 * 60 * 60 * 24 * 160,
   },
@@ -75,6 +84,7 @@ export const DEMO_USERS: UserDoc[] = [
     reputationScore: 85,
     elderMode: false,
     consentLeaderboard: true,
+    consentSpotlight: true,
     photoURL: av("mariam-khelaia"),
     createdAt: Date.now() - 1000 * 60 * 60 * 24 * 140,
   },
@@ -88,6 +98,7 @@ export const DEMO_USERS: UserDoc[] = [
     reputationScore: 80,
     elderMode: false,
     consentLeaderboard: true,
+    consentSpotlight: true,
     photoURL: av("davit-maisuradze"),
     createdAt: Date.now() - 1000 * 60 * 60 * 24 * 120,
   },
@@ -101,6 +112,7 @@ export const DEMO_USERS: UserDoc[] = [
     reputationScore: 78,
     elderMode: false,
     consentLeaderboard: true,
+    consentSpotlight: true,
     photoURL: av("tamar-gelashvili"),
     createdAt: Date.now() - 1000 * 60 * 60 * 24 * 100,
   },
@@ -114,6 +126,7 @@ export const DEMO_USERS: UserDoc[] = [
     reputationScore: 74,
     elderMode: false,
     consentLeaderboard: true,
+    consentSpotlight: true,
     photoURL: av("nika-chkheidze"),
     createdAt: Date.now() - 1000 * 60 * 60 * 24 * 80,
   },
@@ -127,6 +140,7 @@ export const DEMO_USERS: UserDoc[] = [
     reputationScore: 72,
     elderMode: false,
     consentLeaderboard: true,
+    consentSpotlight: true,
     photoURL: av("salome-lortkipanidze"),
     createdAt: Date.now() - 1000 * 60 * 60 * 24 * 70,
   },
@@ -140,6 +154,7 @@ export const DEMO_USERS: UserDoc[] = [
     reputationScore: 68,
     elderMode: false,
     consentLeaderboard: true,
+    consentSpotlight: true,
     photoURL: av("irakli-gogichaishvili"),
     createdAt: Date.now() - 1000 * 60 * 60 * 24 * 60,
   },
@@ -153,6 +168,7 @@ export const DEMO_USERS: UserDoc[] = [
     reputationScore: 65,
     elderMode: false,
     consentLeaderboard: true,
+    consentSpotlight: true,
     photoURL: av("tinatin-bagrationi"),
     createdAt: Date.now() - 1000 * 60 * 60 * 24 * 50,
   },
@@ -166,6 +182,7 @@ export const DEMO_USERS: UserDoc[] = [
     reputationScore: 60,
     elderMode: false,
     consentLeaderboard: true,
+    consentSpotlight: true,
     photoURL: av("avto-kobakhidze"),
     createdAt: Date.now() - 1000 * 60 * 60 * 24 * 40,
   },
@@ -179,6 +196,7 @@ export const DEMO_USERS: UserDoc[] = [
     reputationScore: 58,
     elderMode: false,
     consentLeaderboard: true,
+    consentSpotlight: true,
     photoURL: av("ana-tatarashvili"),
     createdAt: Date.now() - 1000 * 60 * 60 * 24 * 30,
   },
@@ -272,80 +290,6 @@ export const DEMO_COMMENTS: Record<string, Comment[]> = {
   "demo-d6": [],
 };
 
-// ---- Posts ----
-
-function makePost(
-  id: string,
-  userId: string,
-  text: string,
-  hoursAgo: number,
-  commentCount: number,
-  media?: { type: ProofType; url: string },
-): Post {
-  const u = userById(userId);
-  return {
-    id,
-    userId,
-    authorName: u.fullName,
-    authorPhotoURL: u.photoURL,
-    authorPoints: u.carePoints,
-    authorLevel: u.level,
-    text,
-    mediaType: media?.type ?? null,
-    mediaUrl: media?.url ?? null,
-    commentCount,
-    createdAt: Date.now() - 1000 * 60 * 60 * hoursAgo,
-  };
-}
-
-export const DEMO_POSTS: Post[] = [
-  makePost(
-    "demo-p1",
-    "demo-u2",
-    "Reminder: heavy rain forecast for the weekend — check on neighbors with leaky roofs in Old Tbilisi 🌧️",
-    1,
-    2,
-  ),
-  makePost(
-    "demo-p2",
-    "demo-u4",
-    "Just redeemed 100 CP for a free coffee at Coffeesta on Chavchavadze. Small thing, big smile.",
-    4,
-    1,
-    { type: "image", url: P.tree },
-  ),
-  makePost(
-    "demo-p3",
-    "demo-u1",
-    "Anyone want to organize a Sunday cleanup in Mtatsminda Park? DM me, we'll bring extra gloves and bags.",
-    10,
-    3,
-  ),
-  makePost(
-    "demo-p4",
-    "demo-u10",
-    "Видела сегодня значок Tbilisi Care на пальто прохожего — приятно. Чувствую, что нас становится больше.",
-    24,
-    0,
-  ),
-];
-
-export const DEMO_POST_COMMENTS: Record<string, Comment[]> = {
-  "demo-p1": [
-    makeComment("pc1", "demo-u5", "Already checked on babo Nato — she's fine. Roof tiles holding.", 0.8),
-    makeComment("pc2", "demo-u8", "Thanks for the heads up 💙", 0.5),
-  ],
-  "demo-p2": [
-    makeComment("pc3", "demo-u7", "The rewards are starting to feel real — nice!", 3),
-  ],
-  "demo-p3": [
-    makeComment("pc4", "demo-u6", "Count me in, what time?", 8),
-    makeComment("pc5", "demo-u1", "10am at the funicular base. See you there!", 7),
-    makeComment("pc6", "demo-u9", "I'll bring water for everyone.", 6),
-  ],
-  "demo-p4": [],
-};
-
 // ---- Official Posts ----
 
 const TBILISI_IMAGES = {
@@ -355,71 +299,215 @@ const TBILISI_IMAGES = {
   city: "https://images.unsplash.com/photo-1486325212027-8081e485255e?w=900&auto=format&fit=crop",
 };
 
+// Shorthand for a 3-language string — every OfficialPost field shown to users
+// must be filled in ka/en/ru, never just one language.
+const L = (ka: string, en: string, ru: string) => ({ ka, en, ru });
+
 export const DEMO_OFFICIAL_POSTS: OfficialPost[] = [
   {
     id: "official-1",
     tag: "milestone",
-    title: "50,000 Good Deeds in Tbilisi! 🎉",
-    body: "This week our community crossed 50,000 verified good deeds. Every piece of litter picked up, every stray fed, every neighbor helped — it all counted. Thank you, Tbilisi.",
+    title: L(
+      "50,000 კარგი საქმე თბილისში! 🎉",
+      "50,000 Good Deeds in Tbilisi! 🎉",
+      "50 000 добрых дел в Тбилиси! 🎉",
+    ),
+    body: L(
+      "ამ კვირას ჩვენმა საზოგადოებამ გადალახა 50,000 დადასტურებული კარგი საქმის ნიშნული. ყოველი აღებული ნაგავი, ყოველი გამოკვებილი ცხოველი, ყოველი დახმარებული მეზობელი — ყველაფერი გაითვალისწინა. გმადლობთ, თბილისო.",
+      "This week our community crossed 50,000 verified good deeds. Every piece of litter picked up, every stray fed, every neighbor helped — it all counted. Thank you, Tbilisi.",
+      "На этой неделе наше сообщество превысило отметку 50 000 подтверждённых добрых дел. Каждый убранный мусор, каждое покормленное животное, каждый помощь соседу — всё это засчиталось. Спасибо, Тбилиси.",
+    ),
     imageUrl: TBILISI_IMAGES.community,
     stats: [
-      { label: "Total Deeds", value: "50,000+" },
-      { label: "Active Citizens", value: "10,124" },
-      { label: "Care Points Earned", value: "312K" },
+      { label: L("სულ საქმეები", "Total Deeds", "Всего дел"), value: "50,000+" },
+      { label: L("აქტიური მოქალაქე", "Active Citizens", "Активных граждан"), value: "10,124" },
+      { label: L("მიღებული ქულა", "Care Points Earned", "Заработано баллов"), value: "312K" },
     ],
-    ctaLabel: "See Leaderboard",
+    ctaLabel: L("ლიდერბორდი", "See Leaderboard", "Смотреть лидерборд"),
     ctaHref: "/app/leaderboard",
     createdAt: Date.now() - 1000 * 60 * 60 * 3,
   },
   {
     id: "official-2",
-    tag: "reward",
-    title: "New Reward: Free Metro Ride 🚇",
-    body: "In partnership with Tbilisi Transport Company, you can now redeem 200 CP for a free metro ride. Your good deeds literally move the city.",
+    tag: "announcement",
+    title: L(
+      "მერია მადლობას გიხდით 🏛️",
+      "City Hall Says Thank You 🏛️",
+      "Мэрия говорит спасибо 🏛️",
+    ),
+    body: L(
+      "ვაკის უბანმა ამ თვეში გადალახა 5,000 დადასტურებული კარგი საქმის ნიშნული. მერია აღნიშნავს ყველა მოქალაქეს, ვინც ნაგავი აკრიფა, ცხოველები გამოკვება და მეზობლებს დაეხმარა.",
+      "Vake district crossed 5,000 verified good deeds this month. City Hall recognizes every citizen who picked up litter, fed strays, and cared for their neighbors.",
+      "Район Ваке в этом месяце превысил 5 000 подтверждённых добрых дел. Мэрия отмечает каждого гражданина, кто убирал мусор, кормил животных и заботился о соседях.",
+    ),
     stats: [
-      { label: "Cost", value: "200 CP" },
-      { label: "Valid", value: "30 days" },
-      { label: "Stock", value: "500 left" },
+      { label: L("უბანი", "District", "Район"), value: "Vake" },
+      { label: L("საქმეები", "Deeds", "Дел"), value: "5,000+" },
+      { label: L("მოქალაქეები", "Citizens", "Граждан"), value: "1,240" },
     ],
-    ctaLabel: "Redeem Now",
-    ctaHref: "/app/marketplace",
+    ctaLabel: L("ლიდერბორდი", "See Leaderboard", "Смотреть лидерборд"),
+    ctaHref: "/app/leaderboard",
     createdAt: Date.now() - 1000 * 60 * 60 * 18,
   },
   {
     id: "official-3",
     tag: "spotlight",
-    title: "Citizen of the Week: Giorgi Beridze 🏆",
-    body: "Giorgi completed 47 verified deeds this week across Vake and Saburtalo — litter cleanup, tree care, and senior assistance. This is what a Guardian looks like.",
+    title: L(
+      "კვირის მოქალაქე: გიორგი ბერიძე 🏆",
+      "Citizen of the Week: Giorgi Beridze 🏆",
+      "Гражданин недели: Гиорги Беридзе 🏆",
+    ),
+    body: L(
+      "გიორგიმ ამ კვირას შეასრულა 47 დადასტურებული საქმე ვაკესა და საბურთალოში — ნაგვის აღება, ხეების მოვლა და უფროსების დახმარება. ასეთია დარაჯის სახე.",
+      "Giorgi completed 47 verified deeds this week across Vake and Saburtalo — litter cleanup, tree care, and senior assistance. This is what a Guardian looks like.",
+      "Гиорги на этой неделе выполнил 47 подтверждённых дел в Ваке и Сабуртало — уборка мусора, забота о деревьях и помощь пожилым. Вот как выглядит настоящий Guardian.",
+    ),
     imageUrl: TBILISI_IMAGES.cleanup,
+    authorName: "Giorgi Beridze",
+    authorPhotoURL: av("giorgi-beridze"),
+    source: "ai",
     stats: [
-      { label: "Deeds This Week", value: "47" },
-      { label: "Total Points", value: "18,420" },
-      { label: "District", value: "Vake" },
+      { label: L("საქმეები ამ კვირას", "Deeds This Week", "Дел за неделю"), value: "47" },
+      { label: L("სულ ქულები", "Total Points", "Всего баллов"), value: "18,420" },
+      { label: L("უბანი", "District", "Район"), value: "Vake" },
     ],
     createdAt: Date.now() - 1000 * 60 * 60 * 40,
   },
   {
     id: "official-4",
     tag: "event",
-    title: "City-Wide Cleanup: Saturday 10am 🌿",
-    body: "Join thousands of Tbilisi citizens for our biggest organized cleanup yet. All 6 districts, 200+ volunteers, 3 hours. Earn double CP all day Saturday.",
+    title: L(
+      "ქალაქის დასუფთავება: შაბათს, 10:00 🌿",
+      "City-Wide Cleanup: Saturday 10am 🌿",
+      "Уборка по всему городу: субботу в 10:00 🌿",
+    ),
+    body: L(
+      "შემოგვიერთდი ათასობით თბილისელს ჩვენს ყველაზე მასშტაბურ ორგანიზებულ დასუფთავებაში. ყველა 6 უბანი, 200+ მოხალისე, 3 საათი. შაბათს ორმაგი ქულა.",
+      "Join thousands of Tbilisi citizens for our biggest organized cleanup yet. All 6 districts, 200+ volunteers, 3 hours. Earn double CP all day Saturday.",
+      "Присоединяйся к тысячам жителей Тбилиси в нашей самой масштабной уборке. Все 6 районов, 200+ волонтёров, 3 часа. В субботу баллы начисляются вдвойне.",
+    ),
     imageUrl: TBILISI_IMAGES.park,
     stats: [
-      { label: "Date", value: "Saturday" },
-      { label: "Starts", value: "10:00" },
-      { label: "Bonus", value: "2× CP" },
+      { label: L("თარიღი", "Date", "Дата"), value: "Sat" },
+      { label: L("დაწყება", "Starts", "Начало"), value: "10:00" },
+      { label: L("ბონუსი", "Bonus", "Бонус"), value: "2× CP" },
     ],
-    ctaLabel: "I'm In",
+    ctaLabel: L("ვერთვები", "I'm In", "Я в деле"),
     ctaHref: "/app/submit",
     createdAt: Date.now() - 1000 * 60 * 60 * 72,
   },
   {
     id: "official-5",
     tag: "announcement",
-    title: "TbilisiCare Now in All 6 Districts",
-    body: "We've officially expanded to Gldani and Didi Dighomi. Every district of Tbilisi now has active deed verification and local leaderboards. Welcome, new neighbors.",
+    title: L(
+      "TbilisiCare ყველა 6 უბანში",
+      "TbilisiCare Now in All 6 Districts",
+      "TbilisiCare теперь во всех 6 районах",
+    ),
+    body: L(
+      "ჩვენ ოფიციალურად გავიფართოვეთ გლდანსა და დიდ დიღომში. თბილისის ყველა უბანს ახლა აქვს აქტიური საქმეების დადასტურება და ლოკალური ლიდერბორდი. მოგესალმებით, ახალი მეზობლები.",
+      "We've officially expanded to Gldani and Didi Dighomi. Every district of Tbilisi now has active deed verification and local leaderboards. Welcome, new neighbors.",
+      "Мы официально расширились на Глдани и Диди Дигоми. Теперь в каждом районе Тбилиси есть проверка дел и локальный лидерборд. Приветствуем новых соседей.",
+    ),
     imageUrl: TBILISI_IMAGES.city,
     createdAt: Date.now() - 1000 * 60 * 60 * 96,
+  },
+  {
+    id: "official-6",
+    tag: "program",
+    title: L(
+      "სწავლა და დასაქმება: ახალი ჯგუფი იწყება 🎓",
+      "Learn and Get Employed: New Cohort Opens 🎓",
+      "Учись и работай: открыт новый набор 🎓",
+    ),
+    body: L(
+      "მერიის სამუშაო გადამზადების პროგრამა ისევ იწყებს რეგისტრაციას — უფასო კურსები ხელობებში, IT-ის საფუძვლებში და მასპინძლობაში, გარანტირებული გასაუბრებით პარტნიორ დამსაქმებლებთან კურსდამთავრებულთათვის. აქტიურ CareCitizens-ს პრიორიტეტული ადგილი ექნება.",
+      "City Hall's job-training program is enrolling again — free courses in trades, IT basics, and hospitality, with guaranteed interviews at partner employers on graduation. Active CareCitizens get priority placement.",
+      "Программа профессиональной подготовки мэрии снова открыла набор — бесплатные курсы по рабочим специальностям, основам IT и гостеприимству, с гарантированным собеседованием у партнёров-работодателей после выпуска. Активные CareCitizens получают приоритет.",
+    ),
+    imageUrl: TBILISI_IMAGES.community,
+    stats: [
+      { label: L("ხანგრძლივობა", "Duration", "Длительность"), value: "6 wk" },
+      { label: L("კურსდამთავრებული", "Graduates", "Выпускников"), value: "1,860" },
+      { label: L("დასაქმებული", "Hired", "Устроено"), value: "72%" },
+    ],
+    ctaLabel: L("გაიგე მეტი", "Learn More", "Узнать больше"),
+    ctaHref: "https://www.dasakmdi.ge/",
+    createdAt: Date.now() - 1000 * 60 * 60 * 6,
+  },
+  {
+    id: "official-7",
+    tag: "spotlight",
+    title: L(
+      "თამარი დებას ბებია ტამუნას ეხმარება 💙",
+      "Tamar Helps babo Tamuna With Groceries 💙",
+      "Тамар помогает бабо Тамуне с покупками 💙",
+    ),
+    body: L(
+      "თამარ გელაშვილი კვირაში ორჯერ დადის საყიდლებზე თავისი 84 წლის მეზობლისთვის საბურთალოში. AI-ს დადასტურებული საქმე, გულითადი მზრუნველობით.",
+      "Tamar Gelashvili makes the grocery run twice a week for her 84-year-old neighbor in Saburtalo. AI-verified deed, done with heart.",
+      "Тамар Гелашвили два раза в неделю делает покупки для своей 84-летней соседки в Сабуртало. Дело подтверждено AI, сделано с душой.",
+    ),
+    imageUrl: TBILISI_IMAGES.community,
+    authorName: "Tamar Gelashvili",
+    authorPhotoURL: av("tamar-gelashvili"),
+    source: "ai",
+    stats: [
+      { label: L("ტიპი", "Task", "Задача"), value: "Senior help" },
+      { label: L("მიღებული ქულა", "Points Earned", "Получено баллов"), value: "+25" },
+      { label: L("უბანი", "District", "Район"), value: "Saburtalo" },
+    ],
+    ctaLabel: L("საქმის ნახვა", "View Deed", "Смотреть дело"),
+    ctaHref: "/app/leaderboard",
+    createdAt: Date.now() - 1000 * 60 * 60 * 22,
+  },
+  {
+    id: "official-8",
+    tag: "spotlight",
+    title: L(
+      "ნინო ყოველ დილას მაწანწალას აჭმევს 🐾",
+      "Nino Feeds a Stray Every Single Morning 🐾",
+      "Нино каждое утро кормит бездомную собаку 🐾",
+    ),
+    body: L(
+      "ნინო კაპანაძემ საბურთალოში ერთი და იმავე ძაღლისთვის საკვების დარეგულარება 4 თვეზე მეტია. მცირე ჩვევა, დიდი გავლენა.",
+      "Nino Kapanadze has kept a regular feeding routine for the same dog in Saburtalo for over 4 months. Small habit, big impact.",
+      "Нино Капанадзе уже больше 4 месяцев регулярно кормит одну и ту же собаку в Сабуртало. Маленькая привычка — большой эффект.",
+    ),
+    imageUrl: P.stray,
+    authorName: "Nino Kapanadze",
+    authorPhotoURL: av("nino-kapanadze"),
+    source: "ai",
+    stats: [
+      { label: L("ტიპი", "Task", "Задача"), value: "Stray feeding" },
+      { label: L("მიღებული ქულა", "Points Earned", "Получено баллов"), value: "+5" },
+      { label: L("უბანი", "District", "Район"), value: "Saburtalo" },
+    ],
+    createdAt: Date.now() - 1000 * 60 * 60 * 55,
+  },
+  {
+    id: "official-9",
+    tag: "spotlight",
+    title: L(
+      "ლევანმა სიონის მახლობლად გრაფიტი გაწმინდა 🎨",
+      "Levan Cleared Graffiti Near Sioni 🎨",
+      "Леван убрал графити возле Сиони 🎨",
+    ),
+    body: L(
+      "ლევან წიკლაურმა 3 საათი დახარჯა ისტორიულ ზონაში მემკვიდრეობის ფასადებზე გრაფიტის წასაშლელად ძველ თბილისში. AI-ს დადასტურდა როგორც ნამდვილი „მანამდე და შემდეგ“ ცვლილება.",
+      "Levan Tsiklauri spent 3 hours removing graffiti from heritage facades near Sioni in Old Tbilisi. AI-verified as a genuine before/after change.",
+      "Леван Циклаури потратил 3 часа на удаление графити с исторических фасадов возле Сиони в Старом Тбилиси. Подтверждено AI как настоящее изменение «до/после».",
+    ),
+    imageUrl: TBILISI_IMAGES.cleanup,
+    authorName: "Levan Tsiklauri",
+    authorPhotoURL: av("levan-tsiklauri"),
+    source: "ai",
+    stats: [
+      { label: L("ტიპი", "Task", "Задача"), value: "Graffiti" },
+      { label: L("მიღებული ქულა", "Points Earned", "Получено баллов"), value: "+60" },
+      { label: L("უბანი", "District", "Район"), value: "Old Tbilisi" },
+    ],
+    createdAt: Date.now() - 1000 * 60 * 60 * 130,
   },
 ];
 

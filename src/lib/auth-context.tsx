@@ -80,6 +80,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             reputationScore: 50,
             elderMode: false,
             consentLeaderboard: true,
+            consentSpotlight: true,
             photoURL: fbUser.photoURL ?? null,
             createdAt: Date.now(),
           };

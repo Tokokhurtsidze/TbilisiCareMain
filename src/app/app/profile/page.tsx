@@ -164,6 +164,15 @@ export default function ProfilePage() {
         />
       </Card>
 
+      <Card>
+        <Toggle
+          label={t("profile.consentSpotlight")}
+          checked={userDoc?.consentSpotlight !== false}
+          onChange={(v) => updateField("consentSpotlight", v)}
+        />
+        <p className="text-xs text-ink-secondary mt-2">{t("profile.consentSpotlight.hint")}</p>
+      </Card>
+
       <Button variant="ghost" className="w-full" onClick={signOut}>
         <LogOut size={18} />
         {t("auth.signout")}

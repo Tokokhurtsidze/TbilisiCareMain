@@ -5,7 +5,6 @@ import Link from "next/link";
 import {
   collection,
   query,
-  where,
   orderBy,
   limit,
   onSnapshot,
@@ -21,16 +20,12 @@ import { db } from "@/lib/firebase";
 import { useAuth } from "@/lib/auth-context";
 import { useI18n } from "@/lib/i18n";
 import { Card } from "@/components/ui/Card";
-import { DeedCard } from "@/components/DeedCard";
-import { PostCard } from "@/components/PostCard";
 import { OfficialPostCard } from "@/components/OfficialPostCard";
 import { RealStoryCard } from "@/components/RealStoryCard";
-import { PostComposer } from "@/components/PostComposer";
 import { NewsRail } from "@/components/NewsRail";
-import { TASK_TYPES, LEVELS, levelFor, type Deed, type OfficialPost, type Post } from "@/types";
-import { DEMO_DEEDS, DEMO_POSTS, DEMO_OFFICIAL_POSTS } from "@/lib/demo-data";
+import { TASK_TYPES, LEVELS, levelFor, type OfficialPost } from "@/types";
+import { DEMO_OFFICIAL_POSTS, SHOW_DEMO_CONTENT } from "@/lib/demo-data";
 import type { CommunityFeedItem } from "@/app/api/community-feed/route";
-import { toMs } from "@/lib/utils";
 
 const ICONS = {
   "trash-2": Trash2,
@@ -41,16 +36,13 @@ const ICONS = {
 } as const;
 
 type FeedItem =
-  | { kind: "deed";     id: string; ts: number; data: Deed }
-  | { kind: "post";     id: string; ts: number; data: Post }
   | { kind: "official"; id: string; ts: number; data: OfficialPost }
   | { kind: "story";    id: string; ts: number; data: CommunityFeedItem };
 
 export default function HomePage() {
   const { userDoc } = useAuth();
   const { t } = useI18n();
-  const [realDeeds, setRealDeeds] = useState<Deed[]>([]);
-  const [realPosts, setRealPosts] = useState<Post[]>([]);
+  const [officialPosts, setOfficialPosts] = useState<OfficialPost[]>([]);
   const [communityStories, setCommunityStories] = useState<CommunityFeedItem[]>([]);
 
   useEffect(() => {
@@ -60,47 +52,29 @@ export default function HomePage() {
       .catch(() => {});
   }, []);
 
+  // City Hall announcements + AI-generated deed-doer spotlights — the only
+  // source of "posts" on the feed; there is no free-text user post feature,
+  // and raw deed submissions are never shown directly (only via a spotlight).
   useEffect(() => {
     const q = query(
-      collection(db(), "deeds"),
-      where("status", "==", "approved"),
+      collection(db(), "officialPosts"),
       orderBy("createdAt", "desc"),
       limit(30),
     );
     const unsub = onSnapshot(
       q,
       (snap) =>
-        setRealDeeds(
-          snap.docs.map((d) => ({ id: d.id, ...(d.data() as object) }) as Deed),
+        setOfficialPosts(
+          snap.docs.map((d) => ({ id: d.id, ...(d.data() as object) }) as OfficialPost),
         ),
-      () => setRealDeeds([]),
-    );
-    return () => unsub();
-  }, []);
-
-  useEffect(() => {
-    const q = query(
-      collection(db(), "posts"),
-      orderBy("createdAt", "desc"),
-      limit(30),
-    );
-    const unsub = onSnapshot(
-      q,
-      (snap) =>
-        setRealPosts(
-          snap.docs.map((d) => ({ id: d.id, ...(d.data() as object) }) as Post),
-        ),
-      () => setRealPosts([]),
+      () => setOfficialPosts([]),
     );
     return () => unsub();
   }, []);
 
   const feed: FeedItem[] = [
-    ...realDeeds.map((d) => ({ kind: "deed" as const, id: d.id, ts: toMs(d.createdAt), data: d })),
-    ...DEMO_DEEDS.map((d) => ({ kind: "deed" as const, id: d.id, ts: toMs(d.createdAt), data: d })),
-    ...realPosts.map((p) => ({ kind: "post" as const, id: p.id, ts: toMs(p.createdAt), data: p })),
-    ...DEMO_POSTS.map((p) => ({ kind: "post" as const, id: p.id, ts: toMs(p.createdAt), data: p })),
-    ...DEMO_OFFICIAL_POSTS.map((o) => ({ kind: "official" as const, id: o.id, ts: o.createdAt, data: o })),
+    ...officialPosts.map((o) => ({ kind: "official" as const, id: o.id, ts: o.createdAt, data: o })),
+    ...(SHOW_DEMO_CONTENT ? DEMO_OFFICIAL_POSTS : []).map((o) => ({ kind: "official" as const, id: o.id, ts: o.createdAt, data: o })),
     ...communityStories.map((s) => ({ kind: "story" as const, id: s.id, ts: s.publishedAt, data: s })),
   ].sort((a, b) => b.ts - a.ts);
 
@@ -115,9 +89,11 @@ export default function HomePage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <p className="text-ink-secondary text-sm">{t("feed.you")}</p>
-        <span className="text-[10px] font-bold tracking-widest text-brand bg-brand-soft px-2 py-0.5 rounded-full">
-          {t("demo.badge")}
-        </span>
+        {SHOW_DEMO_CONTENT && (
+          <span className="text-[10px] font-bold tracking-widest text-brand bg-brand-soft px-2 py-0.5 rounded-full">
+            {t("demo.badge")}
+          </span>
+        )}
       </div>
 
       {/* XP Card */}
@@ -165,7 +141,6 @@ export default function HomePage() {
       </Card>
 
       <section>
-        <h2 className="text-sm font-bold uppercase tracking-wider text-ink-secondary mb-3">{t("home.today")}</h2>
         <div className="grid grid-cols-5 gap-2">
           {TASK_TYPES.map((task) => {
             const Icon = ICONS[task.icon as keyof typeof ICONS];
@@ -177,8 +152,8 @@ export default function HomePage() {
                 title={t(`task.${task.id}`)}
               >
                 <Icon size={22} className="text-brand group-hover:scale-110 transition-transform duration-200" strokeWidth={1.6} />
-                <span className="text-[10px] font-semibold text-brand">
-                  +{task.basePoints}
+                <span className="text-[9px] font-semibold text-ink-secondary text-center leading-tight line-clamp-1">
+                  {t(`task.${task.id}`)}
                 </span>
               </Link>
             );
@@ -188,20 +163,14 @@ export default function HomePage() {
 
       <NewsRail />
 
-      <PostComposer />
-
       <section>
         <h2 className="text-sm font-bold uppercase tracking-wider text-ink-secondary mb-3">{t("feed.title")}</h2>
         <div className="space-y-4">
           {feed.map((item) =>
-            item.kind === "deed" ? (
-              <DeedCard key={`d-${item.id}`} deed={item.data} />
-            ) : item.kind === "official" ? (
+            item.kind === "official" ? (
               <OfficialPostCard key={`o-${item.id}`} post={item.data} />
-            ) : item.kind === "story" ? (
-              <RealStoryCard key={`s-${item.id}`} item={item.data} />
             ) : (
-              <PostCard key={`p-${item.id}`} post={item.data} />
+              <RealStoryCard key={`s-${item.id}`} item={item.data} />
             ),
           )}
         </div>

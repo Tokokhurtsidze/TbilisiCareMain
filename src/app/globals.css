@@ -1,5 +1,8 @@
-/* Multi-script font stack — Latin / Cyrillic / Georgian via Google Fonts CDN. */
-@import url("https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,400;0,14..32,500;0,14..32,600;0,14..32,700;0,14..32,800&family=Noto+Sans+Georgian:wght@300;400;500;600;700;800&display=swap");
+/* Multi-script font stack — Latin / Cyrillic / Georgian via Google Fonts CDN.
+   Fraunces is the display face for headlines (Latin/Cyrillic only — Georgian
+   glyphs aren't in the font, so :lang(ka) falls back to Noto Sans Georgian
+   automatically via the font-family stack below). */
+@import url("https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,400;0,14..32,500;0,14..32,600;0,14..32,700;0,14..32,800&family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;0,9..144,700;0,9..144,800;1,9..144,500;1,9..144,600&family=Noto+Sans+Georgian:wght@300;400;500;600;700;800&display=swap");
 
 @tailwind base;
 @tailwind components;
@@ -55,6 +58,14 @@ body {
   line-height: 1.65;
 }
 
+/* Display face for marketing headlines — warm editorial serif, Latin/Cyrillic
+   only. Georgian glyphs aren't present so the browser falls back per-character
+   to Noto Sans Georgian, keeping Georgian copy in its normal typeface. */
+.font-display {
+  font-family: "Fraunces", "Noto Sans Georgian", ui-serif, serif;
+  font-optical-sizing: auto;
+}
+
 /* Georgian-aware typography — Noto Sans Georgian as primary script font */
 :lang(ka) {
   font-family: "Noto Sans Georgian", "Inter", system-ui, sans-serif;
@@ -99,6 +110,40 @@ body {
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--text-secondary); }
+
+/* Hero atmosphere — layered radial-gradient mesh (brand blue + a warm amber
+   echo of Tbilisi's old-town copper roofs) instead of a flat background. */
+.hero-atmosphere {
+  position: relative;
+}
+.hero-atmosphere::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 900px 500px at 12% -10%, rgba(0, 99, 247, 0.16), transparent 60%),
+    radial-gradient(ellipse 700px 480px at 100% 10%, rgba(217, 119, 6, 0.10), transparent 55%),
+    radial-gradient(ellipse 600px 400px at 50% 100%, rgba(0, 82, 204, 0.08), transparent 60%);
+}
+.dark .hero-atmosphere::before {
+  background:
+    radial-gradient(ellipse 900px 500px at 12% -10%, rgba(91, 141, 239, 0.20), transparent 60%),
+    radial-gradient(ellipse 700px 480px at 100% 10%, rgba(217, 158, 74, 0.10), transparent 55%),
+    radial-gradient(ellipse 600px 400px at 50% 100%, rgba(91, 141, 239, 0.10), transparent 60%);
+}
+/* Fine grain overlay for texture — barely perceptible, kills the "flat AI gradient" look */
+.hero-atmosphere::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.5;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.35'/%3E%3C/svg%3E");
+}
 
 /* === Keyframe Animations === */
 @keyframes shimmer {

@@ -5,7 +5,8 @@ import { useRouter, useSearchParams } from "next/navigation";
 import {
   MapPin,
   Upload,
-  CheckCircle2,
+  XCircle,
+  Clock,
   Image as ImageIcon,
   Video,
   X,
@@ -18,7 +19,6 @@ import {
 import {
   collection,
   doc,
-  increment,
   serverTimestamp,
   writeBatch,
 } from "firebase/firestore";
@@ -32,9 +32,16 @@ import { useAuth } from "@/lib/auth-context";
 import { useI18n } from "@/lib/i18n";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
-import { TASK_TYPES, levelFor, type ProofType, type TaskTypeId } from "@/types";
+import { TASK_TYPES, midpointPoints, type ProofType, type TaskTypeId } from "@/types";
 
 type Coords = { lat: number; lng: number } | null;
+type Stage =
+  | "idle"
+  | "uploading"
+  | "saving"
+  | "validating"
+  | "rejected"
+  | "review";
 
 export default function SubmitPage() {
   const { t } = useI18n();
@@ -44,16 +51,20 @@ export default function SubmitPage() {
   const preset = search.get("type") as TaskTypeId | null;
 
   const [taskType, setTaskType] = useState<TaskTypeId | null>(preset);
-  const [proof, setProof] = useState<File | null>(null);
-  const [preview, setPreview] = useState<string | null>(null);
+  const [before, setBefore] = useState<File | null>(null);
+  const [after, setAfter] = useState<File | null>(null);
+  const [beforePreview, setBeforePreview] = useState<string | null>(null);
+  const [afterPreview, setAfterPreview] = useState<string | null>(null);
   const [caption, setCaption] = useState("");
   const [coords, setCoords] = useState<Coords>(null);
-  const [status, setStatus] = useState<"idle" | "uploading" | "saving" | "done">(
-    "idle",
-  );
+  const [stage, setStage] = useState<Stage>("idle");
   const [progress, setProgress] = useState(0);
   const [err, setErr] = useState<string | null>(null);
-  const fileInput = useRef<HTMLInputElement>(null);
+  const [outcome, setOutcome] = useState<{ reason?: string; suggestedPoints?: number } | null>(null);
+  const beforeInput = useRef<HTMLInputElement>(null);
+  const afterInput = useRef<HTMLInputElement>(null);
+
+  const task = TASK_TYPES.find((x) => x.id === taskType) ?? null;
 
   useEffect(() => {
     if (!navigator.geolocation) return;
@@ -65,39 +76,45 @@ export default function SubmitPage() {
   }, []);
 
   useEffect(() => {
-    if (!proof) {
-      setPreview(null);
+    if (!before) {
+      setBeforePreview(null);
       return;
     }
-    const url = URL.createObjectURL(proof);
-    setPreview(url);
+    const url = URL.createObjectURL(before);
+    setBeforePreview(url);
     return () => URL.revokeObjectURL(url);
-  }, [proof]);
+  }, [before]);
 
-  const proofType: ProofType | null = proof
-    ? proof.type.startsWith("video/")
-      ? "video"
-      : proof.type.startsWith("image/")
-        ? "image"
-        : null
-    : null;
+  useEffect(() => {
+    if (!after) {
+      setAfterPreview(null);
+      return;
+    }
+    const url = URL.createObjectURL(after);
+    setAfterPreview(url);
+    return () => URL.revokeObjectURL(url);
+  }, [after]);
 
-  // The only true requirement: pick a task type. Everything else is optional.
-  const ready = !!taskType && !!user && !!userDoc;
+  const fileType = (f: File | null): ProofType | null =>
+    f ? (f.type.startsWith("video/") ? "video" : f.type.startsWith("image/") ? "image" : null) : null;
+
+  const afterType = fileType(after);
+
+  const ready =
+    !!task &&
+    !!after &&
+    (!task.beforeAfter || !!before) &&
+    !!user &&
+    !!userDoc;
 
   const UPLOAD_TIMEOUT_MS = 15_000;
 
-  const uploadProof = (file: File, deedId: string): Promise<string> =>
+  const uploadProof = (file: File, deedId: string, slot: "before" | "after"): Promise<string> =>
     new Promise((resolve, reject) => {
       if (!user) return reject(new Error("no user"));
       const ext = file.type.startsWith("video/") ? "mp4" : "jpg";
-      const proofRef = ref(
-        storage(),
-        `deeds/${user.uid}/${deedId}/proof.${ext}`,
-      );
-      const task = uploadBytesResumable(proofRef, file, {
-        contentType: file.type,
-      });
+      const proofRef = ref(storage(), `deeds/${user.uid}/${deedId}/${slot}.${ext}`);
+      const task = uploadBytesResumable(proofRef, file, { contentType: file.type });
 
       const timer = setTimeout(() => {
         task.cancel();
@@ -106,8 +123,7 @@ export default function SubmitPage() {
 
       task.on(
         "state_changed",
-        (s) =>
-          setProgress(Math.round((s.bytesTransferred / s.totalBytes) * 100)),
+        (s) => setProgress(Math.round((s.bytesTransferred / s.totalBytes) * 100)),
         (err) => {
           clearTimeout(timer);
           reject(err);
@@ -123,122 +139,82 @@ export default function SubmitPage() {
       );
     });
 
+  const reset = () => {
+    setBefore(null);
+    setAfter(null);
+    setCaption("");
+    setStage("idle");
+    setProgress(0);
+    setErr(null);
+    setOutcome(null);
+  };
+
   const handleSubmit = async () => {
-    if (!ready || !user || !userDoc || !taskType) return;
+    if (!ready || !user || !userDoc || !task) return;
     setErr(null);
     setProgress(0);
     try {
       const deedRef = doc(collection(db(), "deeds"));
       const deedId = deedRef.id;
 
-      let proofUrl: string | null = null;
-      let pType: ProofType | null = null;
-      if (proof && proofType) {
-        setStatus("uploading");
-        try {
-          proofUrl = await uploadProof(proof, deedId);
-          pType = proofType;
-        } catch (e) {
-          // Demo-friendly: if upload fails (e.g. Storage not enabled),
-          // still award the points so the user is not blocked.
-          console.warn("proof upload failed, continuing without it:", e);
-        }
-      }
+      setStage("uploading");
+      const afterUrl = await uploadProof(after!, deedId, "after");
+      const beforeUrl = task.beforeAfter ? await uploadProof(before!, deedId, "before") : null;
 
-      setStatus("saving");
-
-      const taskMeta = TASK_TYPES.find((x) => x.id === taskType)!;
-      const newPoints = (userDoc.carePoints ?? 0) + taskMeta.basePoints;
-      const newLevel = levelFor(newPoints).level;
-
+      setStage("saving");
       const batch = writeBatch(db());
       batch.set(deedRef, {
         userId: user.uid,
         authorName: userDoc.fullName || user.displayName || "Citizen",
         authorPhotoURL: userDoc.photoURL ?? user.photoURL ?? null,
-        authorPoints: newPoints,
-        authorLevel: newLevel,
-        taskTypeId: taskType,
-        status: "approved",
+        authorPoints: userDoc.carePoints ?? 0,
+        authorLevel: userDoc.level ?? 1,
+        taskTypeId: task.id,
+        status: "pending",
         declaredLat: coords?.lat ?? null,
         declaredLng: coords?.lng ?? null,
-        proofType: pType,
-        proofUrl,
+        proofType: afterType,
+        proofUrl: afterUrl,
+        proofBeforeUrl: beforeUrl,
         cvConfidence: null,
-        pointsAwarded: taskMeta.basePoints,
+        rejectionReason: null,
+        pointsAwarded: midpointPoints(task),
         caption: caption.trim() || null,
         commentCount: 0,
         createdAt: serverTimestamp(),
-        validatedAt: serverTimestamp(),
-      });
-      batch.update(doc(db(), "users", user.uid), {
-        carePoints: increment(taskMeta.basePoints),
-        level: newLevel,
+        validatedAt: null,
       });
       await batch.commit();
 
-      setStatus("done");
-      setTimeout(() => router.replace("/app"), 600);
+      setStage("validating");
+      const idToken = await user.getIdToken();
+      const res = await fetch("/api/deeds/validate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${idToken}` },
+        body: JSON.stringify({ deedId }),
+      });
+      const result = await res.json().catch(() => ({}));
+
+      // Don't silently treat a real failure (expired token, network blip,
+      // server error) as "sent for review" — surface it as an actual error.
+      if (!res.ok && result.status !== "rejected" && result.status !== "review") {
+        throw new Error(result.error ? `validation failed: ${result.error}` : "validation failed");
+      }
+
+      if (result.status === "rejected") {
+        setOutcome({ reason: result.reason });
+        setStage("rejected");
+      } else if (result.status === "review") {
+        setOutcome({ reason: result.reason, suggestedPoints: result.suggestedPoints });
+        setStage("review");
+      } else {
+        throw new Error("unexpected validation response");
+      }
     } catch (e) {
       setErr((e as Error).message);
-      setStatus("idle");
+      setStage("idle");
     }
   };
-
-  const submittedTask = TASK_TYPES.find((x) => x.id === taskType);
-
-  if (status === "done") {
-    const confettiColors = ["#0052cc", "#1b873f", "#b7791f", "#5b8def", "#c53030", "#0063f7"];
-    const pieces = Array.from({ length: 24 }, (_, i) => ({
-      color: confettiColors[i % confettiColors.length],
-      left: `${10 + (i * 3.4) % 80}%`,
-      delay: `${(i * 0.07).toFixed(2)}s`,
-      duration: `${0.9 + (i % 5) * 0.15}s`,
-      drift: `${(i % 2 === 0 ? 1 : -1) * (10 + (i % 4) * 12)}px`,
-      spin: `${360 + (i % 3) * 180}deg`,
-      shape: i % 3 === 0 ? "50%" : i % 3 === 1 ? "2px" : "50% 2px",
-    }));
-
-    return (
-      <div className="min-h-[60vh] grid place-items-center text-center relative overflow-hidden">
-        {/* Confetti */}
-        {pieces.map((p, i) => (
-          <div
-            key={i}
-            className="confetti-piece"
-            style={{
-              backgroundColor: p.color,
-              left: p.left,
-              "--delay": p.delay,
-              "--duration": p.duration,
-              "--drift": p.drift,
-              "--spin": p.spin,
-              borderRadius: p.shape,
-            } as React.CSSProperties}
-          />
-        ))}
-
-        <div className="relative z-10 space-y-4">
-          <div className="animate-bounce-in">
-            <CheckCircle2 size={72} className="text-success mx-auto" />
-          </div>
-          <div className="animate-slide-up stagger-2">
-            <p className="text-2xl font-extrabold tracking-tight">{t("submit.success")}</p>
-          </div>
-          {submittedTask && (
-            <div className="animate-pop-in stagger-3">
-              <div className="inline-flex flex-col items-center gap-1 px-6 py-4 rounded-2xl bg-brand-soft border border-brand/20">
-                <p className="text-4xl font-extrabold text-brand tabular-nums">
-                  +{submittedTask.basePoints}
-                </p>
-                <p className="text-sm font-semibold text-brand uppercase tracking-wider">Care Points</p>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-    );
-  }
 
   const SUBMIT_ICONS = {
     "trash-2": Trash2,
@@ -247,6 +223,39 @@ export default function SubmitPage() {
     "spray-can": SprayCan,
     trees: Trees,
   } as const;
+
+  if (stage === "rejected" || stage === "review") {
+    const isReview = stage === "review";
+    return (
+      <div className="min-h-[60vh] grid place-items-center text-center px-6">
+        <div className="space-y-4 max-w-sm">
+          {isReview ? (
+            <Clock size={64} className="text-brand mx-auto" />
+          ) : (
+            <XCircle size={64} className="text-danger mx-auto" />
+          )}
+          <p className="text-xl font-extrabold tracking-tight">
+            {isReview ? t("submit.review.title") : t("submit.rejected.title")}
+          </p>
+          <p className="text-sm text-ink-secondary leading-relaxed">
+            {isReview ? t("submit.review.body") : t("submit.rejected.body")}
+          </p>
+          {isReview && typeof outcome?.suggestedPoints === "number" && (
+            <div className="inline-flex flex-col items-center gap-1 px-6 py-3 rounded-2xl bg-brand-soft border border-brand/20">
+              <p className="text-3xl font-extrabold text-brand tabular-nums">+{outcome.suggestedPoints}</p>
+              <p className="text-xs font-semibold text-brand uppercase tracking-wider">{t("submit.suggestedPoints")}</p>
+            </div>
+          )}
+          <div className="flex gap-2 justify-center">
+            <Button variant="ghost" onClick={reset}>
+              {t("submit.retry")}
+            </Button>
+            <Button onClick={() => router.replace("/app")}>{t("post.back")}</Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-5">
@@ -259,13 +268,13 @@ export default function SubmitPage() {
       <Card>
         <p className="text-xs font-bold uppercase tracking-wider text-ink-secondary mb-3">{t("submit.choose")}</p>
         <div className="grid grid-cols-2 gap-2">
-          {TASK_TYPES.map((task) => {
-            const Icon = SUBMIT_ICONS[task.icon as keyof typeof SUBMIT_ICONS];
-            const active = taskType === task.id;
+          {TASK_TYPES.map((tt) => {
+            const Icon = SUBMIT_ICONS[tt.icon as keyof typeof SUBMIT_ICONS];
+            const active = taskType === tt.id;
             return (
               <button
-                key={task.id}
-                onClick={() => setTaskType(task.id)}
+                key={tt.id}
+                onClick={() => setTaskType(tt.id)}
                 className={`p-3.5 rounded-xl text-sm font-semibold text-left transition-all duration-200 border flex items-start gap-3 group ${
                   active
                     ? "bg-brand text-white border-brand shadow-[var(--shadow-brand)]"
@@ -275,58 +284,32 @@ export default function SubmitPage() {
                 <div className={`mt-0.5 rounded-lg p-1.5 ${active ? "bg-white/20" : "bg-surface-base"}`}>
                   {Icon && <Icon size={16} className={active ? "text-white" : "text-brand"} strokeWidth={1.7} />}
                 </div>
-                <div>
-                  <div>{t(`task.${task.id}`)}</div>
-                  <div className={`text-xs mt-0.5 font-bold ${active ? "text-white/80" : "text-brand"}`}>+{task.basePoints} CP</div>
-                </div>
+                <div>{t(`task.${tt.id}`)}</div>
               </button>
             );
           })}
         </div>
       </Card>
 
-      <Card>
-        <p className="text-sm font-medium mb-3">{t("submit.proof.optional")}</p>
-        <input
-          ref={fileInput}
-          type="file"
-          accept="image/*,video/*"
-          className="hidden"
-          onChange={(e) => setProof(e.target.files?.[0] ?? null)}
+      {task?.beforeAfter && (
+        <ProofSlot
+          label={t("submit.before")}
+          file={before}
+          preview={beforePreview}
+          onPick={(f) => setBefore(f)}
+          inputRef={beforeInput}
+          accept="image/*"
         />
+      )}
 
-        {preview ? (
-          <div className="rounded-xl overflow-hidden bg-black mb-3 relative">
-            {proofType === "video" ? (
-              <video src={preview} controls playsInline className="w-full max-h-[320px]" />
-            ) : (
-              <img src={preview} alt="" className="w-full max-h-[320px] object-cover" />
-            )}
-            <button
-              onClick={() => setProof(null)}
-              className="absolute top-2 right-2 h-9 w-9 grid place-items-center rounded-full bg-black/60 text-white hover:bg-black/80"
-              aria-label="Remove"
-            >
-              <X size={18} />
-            </button>
-          </div>
-        ) : null}
-
-        <Button
-          variant={proof ? "secondary" : "ghost"}
-          className="w-full"
-          onClick={() => fileInput.current?.click()}
-        >
-          {proofType === "video" ? (
-            <Video size={18} />
-          ) : proofType === "image" ? (
-            <ImageIcon size={18} />
-          ) : (
-            <Upload size={18} />
-          )}
-          {proof ? proof.name : t("submit.proof.choose")}
-        </Button>
-      </Card>
+      <ProofSlot
+        label={task?.beforeAfter ? t("submit.after") : t("submit.proof")}
+        file={after}
+        preview={afterPreview}
+        onPick={(f) => setAfter(f)}
+        inputRef={afterInput}
+        accept={task?.beforeAfter ? "image/*" : "image/*,video/*"}
+      />
 
       <Card>
         <input
@@ -344,26 +327,28 @@ export default function SubmitPage() {
           <div className="text-sm">
             <p className="font-medium">{t("submit.location")}</p>
             <p className="text-ink-secondary">
-              {coords
-                ? `${coords.lat.toFixed(5)}, ${coords.lng.toFixed(5)}`
-                : "—"}
+              {coords ? `${coords.lat.toFixed(5)}, ${coords.lng.toFixed(5)}` : "—"}
             </p>
           </div>
         </div>
       </Card>
 
-      {status === "uploading" && (
+      {stage === "uploading" && (
         <div className="rounded-xl bg-surface-subtle p-3">
           <div className="flex items-center justify-between text-xs text-ink-secondary mb-2">
             <span>{t("submit.progress", { pct: progress })}</span>
             <span>{progress}%</span>
           </div>
           <div className="h-2 rounded-full bg-surface-base overflow-hidden">
-            <div
-              className="h-full bg-brand transition-all"
-              style={{ width: `${progress}%` }}
-            />
+            <div className="h-full bg-brand transition-all" style={{ width: `${progress}%` }} />
           </div>
+        </div>
+      )}
+
+      {stage === "validating" && (
+        <div className="rounded-xl bg-surface-subtle p-3 text-sm text-ink-secondary flex items-center gap-2">
+          <Clock size={16} className="text-brand animate-pulse" />
+          {t("submit.validating")}
         </div>
       )}
 
@@ -372,16 +357,72 @@ export default function SubmitPage() {
       <Button
         size="lg"
         className="w-full"
-        disabled={!ready || status === "uploading" || status === "saving"}
-        loading={status === "uploading" || status === "saving"}
+        disabled={!ready || stage !== "idle"}
+        loading={stage === "uploading" || stage === "saving" || stage === "validating"}
         onClick={handleSubmit}
       >
-        {status === "uploading"
+        {stage === "uploading"
           ? t("submit.uploading")
-          : status === "saving"
+          : stage === "saving"
             ? t("common.loading")
-            : t("submit.send")}
+            : stage === "validating"
+              ? t("submit.validating")
+              : t("submit.send")}
       </Button>
     </div>
+  );
+}
+
+function ProofSlot({
+  label,
+  file,
+  preview,
+  onPick,
+  inputRef,
+  accept,
+}: {
+  label: string;
+  file: File | null;
+  preview: string | null;
+  onPick: (f: File | null) => void;
+  inputRef: React.RefObject<HTMLInputElement>;
+  accept: string;
+}) {
+  const { t } = useI18n();
+  const isVideo = file?.type.startsWith("video/");
+
+  return (
+    <Card>
+      <p className="text-sm font-medium mb-3">{label}</p>
+      <input
+        ref={inputRef}
+        type="file"
+        accept={accept}
+        className="hidden"
+        onChange={(e) => onPick(e.target.files?.[0] ?? null)}
+      />
+
+      {preview ? (
+        <div className="rounded-xl overflow-hidden bg-black mb-3 relative">
+          {isVideo ? (
+            <video src={preview} controls playsInline className="w-full max-h-[320px]" />
+          ) : (
+            <img src={preview} alt="" className="w-full max-h-[320px] object-cover" />
+          )}
+          <button
+            onClick={() => onPick(null)}
+            className="absolute top-2 right-2 h-9 w-9 grid place-items-center rounded-full bg-black/60 text-white hover:bg-black/80"
+            aria-label="Remove"
+          >
+            <X size={18} />
+          </button>
+        </div>
+      ) : null}
+
+      <Button variant={file ? "secondary" : "ghost"} className="w-full" onClick={() => inputRef.current?.click()}>
+        {isVideo ? <Video size={18} /> : file ? <ImageIcon size={18} /> : <Upload size={18} />}
+        {file ? file.name : t("submit.proof.choose")}
+      </Button>
+    </Card>
   );
 }

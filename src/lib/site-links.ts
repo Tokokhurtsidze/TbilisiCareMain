@@ -35,6 +35,8 @@ export const INFO_LINKS: InfoLink[] = [
   { id: "news", href: "/app/news", labelKey: "site.news" },
   { id: "partners", href: "/app/partners", labelKey: "site.partners" },
   { id: "cityhall", href: "https://tbilisi.gov.ge", labelKey: "site.cityhall", external: true },
+  { id: "cityhall-portal", href: "https://my.tbilisi.gov.ge/#/home", labelKey: "site.cityhallPortal", external: true },
+  { id: "learn-employed", href: "https://www.dasakmdi.ge/", labelKey: "site.learnEmployed", external: true },
   { id: "privacy", href: "/app/privacy", labelKey: "site.privacy" },
   { id: "terms", href: "/app/terms", labelKey: "site.terms" },
   { id: "contact", href: "/app/contact", labelKey: "site.contact" },

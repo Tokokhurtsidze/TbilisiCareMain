@@ -7,11 +7,11 @@ import { SuppressExtensionWarnings } from "@/components/SuppressExtensionWarning
 
 export const metadata: Metadata = {
   title: {
-    default: "TbilisiCare — Good Deeds, Rewarded",
+    default: "TbilisiCare — Good Deeds, Recognized",
     template: "%s | TbilisiCare",
   },
   description:
-    "Join 10,000+ Tbilisi citizens earning real rewards for helping their city. Pick up litter, feed strays, help seniors — every deed counts.",
+    "Join 10,000+ Tbilisi citizens earning recognition for helping their city. Pick up litter, feed strays, help seniors — every verified deed counts toward the leaderboard.",
   metadataBase: new URL("https://tbilisicare.ge"),
   keywords: [
     "Tbilisi",
@@ -19,7 +19,7 @@ export const metadata: Metadata = {
     "good deeds",
     "volunteer",
     "Georgia",
-    "rewards",
+    "leaderboard",
     "community",
     "TbilisiCare",
   ],
@@ -37,15 +37,15 @@ export const metadata: Metadata = {
     type: "website",
     url: "https://tbilisicare.ge",
     siteName: "TbilisiCare",
-    title: "TbilisiCare — Good Deeds, Rewarded",
+    title: "TbilisiCare — Good Deeds, Recognized",
     description:
-      "Join 10,000+ Tbilisi citizens earning real rewards for helping their city.",
+      "Join 10,000+ Tbilisi citizens earning recognition for helping their city.",
     locale: "en_US",
   },
   twitter: {
     card: "summary_large_image",
-    title: "TbilisiCare — Good Deeds, Rewarded",
-    description: "Good deeds earn real rewards in Tbilisi.",
+    title: "TbilisiCare — Good Deeds, Recognized",
+    description: "Good deeds earn recognition and leaderboard status in Tbilisi.",
     creator: "@tbilisicare",
   },
   alternates: {
@@ -73,7 +73,7 @@ const jsonLd = [
     "@type": "Organization",
     name: "TbilisiCare",
     url: "https://tbilisicare.ge",
-    logo: "https://tbilisicare.ge/icon.png",
+    logo: "https://tbilisicare.ge/logo.ico",
     sameAs: [
       "https://www.facebook.com/tbilisicare",
       "https://www.instagram.com/tbilisicare",
@@ -86,7 +86,7 @@ const jsonLd = [
     },
     foundingDate: "2024",
     description:
-      "A civic gamification platform where Tbilisi residents earn real rewards for verified good deeds.",
+      "A civic gamification platform where Tbilisi residents earn recognition for verified good deeds.",
   },
   {
     "@context": "https://schema.org",
@@ -94,7 +94,7 @@ const jsonLd = [
     name: "TbilisiCare",
     url: "https://tbilisicare.ge",
     description:
-      "Tbilisi's civic community platform — earn CarePoints for good deeds, redeem real rewards.",
+      "Tbilisi's civic community platform — earn CarePoints for good deeds, climb the leaderboard.",
     applicationCategory: "SocialNetworkingApplication",
     operatingSystem: "Web, iOS, Android",
     offers: { "@type": "Offer", price: "0", priceCurrency: "GEL" },

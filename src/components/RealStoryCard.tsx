@@ -1,6 +1,7 @@
 "use client";
 
 import { ExternalLink, Newspaper } from "lucide-react";
+import { useI18n } from "@/lib/i18n";
 import { relativeTime } from "@/lib/utils";
 import type { CommunityFeedItem } from "@/app/api/community-feed/route";
 
@@ -10,6 +11,7 @@ const SOURCE_COLORS: Record<string, string> = {
 };
 
 export function RealStoryCard({ item }: { item: CommunityFeedItem }) {
+  const { t, locale } = useI18n();
   const badgeClass = SOURCE_COLORS[item.source] ?? "text-ink-secondary bg-surface-subtle border-line";
 
   return (
@@ -43,7 +45,7 @@ export function RealStoryCard({ item }: { item: CommunityFeedItem }) {
             {item.source}
           </span>
           <time className="text-xs text-ink-secondary">
-            {relativeTime(item.publishedAt, "en")}
+            {relativeTime(item.publishedAt, locale)}
           </time>
         </div>
 
@@ -61,7 +63,7 @@ export function RealStoryCard({ item }: { item: CommunityFeedItem }) {
 
         {/* Read more */}
         <div className="flex items-center gap-1 mt-3 text-xs font-semibold text-brand">
-          Read full story
+          {t("story.readMore")}
           <ExternalLink size={11} strokeWidth={2.2} />
         </div>
       </div>

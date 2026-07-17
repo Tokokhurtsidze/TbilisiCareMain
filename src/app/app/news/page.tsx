@@ -42,8 +42,8 @@ function NewsRow({ item, ago }: { item: NewsItem; ago: string }) {
         className={`w-24 sm:w-32 bg-gradient-to-br ${NEWS_GRADIENTS[item.category]} grid place-items-center shrink-0`}
       >
         {item.category === "city" ? (
-          <div className="bg-white/95 rounded-full p-2 grid place-items-center">
-            <TbilisiLogo size={42} />
+          <div className="bg-white/95 rounded-xl px-2.5 py-1.5 grid place-items-center">
+            <TbilisiLogo size={16} />
           </div>
         ) : (
           (() => {

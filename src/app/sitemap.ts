@@ -10,7 +10,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${BASE}/auth/register`,   lastModified: now, changeFrequency: "monthly", priority: 0.7 },
     { url: `${BASE}/app`,             lastModified: now, changeFrequency: "hourly",  priority: 0.9 },
     { url: `${BASE}/app/leaderboard`, lastModified: now, changeFrequency: "hourly",  priority: 0.8 },
-    { url: `${BASE}/app/marketplace`, lastModified: now, changeFrequency: "daily",   priority: 0.8 },
     { url: `${BASE}/app/news`,        lastModified: now, changeFrequency: "daily",   priority: 0.7 },
     { url: `${BASE}/app/submit`,      lastModified: now, changeFrequency: "monthly", priority: 0.6 },
     { url: `${BASE}/about`,           lastModified: now, changeFrequency: "monthly", priority: 0.5 },

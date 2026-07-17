@@ -7,7 +7,7 @@ import { Crown, Medal, Trophy } from "lucide-react";
 import { db } from "@/lib/firebase";
 import { useAuth } from "@/lib/auth-context";
 import { useI18n } from "@/lib/i18n";
-import { DEMO_USERS } from "@/lib/demo-data";
+import { DEMO_USERS, SHOW_DEMO_CONTENT } from "@/lib/demo-data";
 import type { UserDoc } from "@/types";
 
 function Avatar({ user, size = 10 }: { user: UserDoc; size?: 6 | 8 | 9 | 10 | 12 | 14 | 20 }) {
@@ -74,7 +74,7 @@ export default function LeaderboardPage() {
   }, []);
 
   const map = new Map<string, UserDoc>();
-  for (const u of DEMO_USERS) map.set(u.id, u);
+  if (SHOW_DEMO_CONTENT) for (const u of DEMO_USERS) map.set(u.id, u);
   for (const u of realRows) map.set(u.id, u);
   if (user && userDoc) map.set(user.uid, { ...userDoc, id: user.uid });
   const rows = [...map.values()].sort((a, b) => b.carePoints - a.carePoints);
@@ -87,9 +87,11 @@ export default function LeaderboardPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-extrabold tracking-tight">{t("leaderboard.title")}</h1>
-        <span className="text-[10px] font-bold tracking-widest text-brand bg-brand-soft px-2 py-0.5 rounded-full">
-          {t("demo.badge")}
-        </span>
+        {SHOW_DEMO_CONTENT && (
+          <span className="text-[10px] font-bold tracking-widest text-brand bg-brand-soft px-2 py-0.5 rounded-full">
+            {t("demo.badge")}
+          </span>
+        )}
       </div>
 
       {/* Podium — top 3 */}

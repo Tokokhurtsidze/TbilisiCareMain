@@ -80,6 +80,11 @@ export default function TermsPage() {
         </div>
       </div>
 
+      {/* Independence disclaimer */}
+      <div className="rounded-2xl border border-line bg-surface-elevated p-4">
+        <p className="text-sm text-ink-secondary leading-relaxed">{t("site.disclaimer")}</p>
+      </div>
+
       {/* Never do this */}
       <div className="rounded-2xl border border-red-200 bg-red-50 dark:border-red-900/40 dark:bg-red-950/20 p-5">
         <div className="flex items-center gap-2 mb-3">

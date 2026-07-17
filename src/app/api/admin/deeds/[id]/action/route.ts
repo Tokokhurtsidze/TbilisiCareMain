@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { FieldValue } from "firebase-admin/firestore";
 import { getAdminSession } from "@/lib/admin-auth";
 import { adminDb } from "@/lib/firebase-admin";
-import { LEVELS } from "@/types";
+import { approveDeed, rejectDeed } from "@/lib/deed-admin";
 
 export async function POST(
   req: NextRequest,
@@ -31,30 +30,18 @@ export async function POST(
   const deed = deedSnap.data()!;
 
   if (action === "reject") {
-    await deedRef.update({ status: "rejected" });
+    await rejectDeed(db, params.id, deed.cvConfidence ?? null, "manual_reject");
     return NextResponse.json({ ok: true });
   }
 
-  // approve
-  const userRef = db.collection("users").doc(deed.userId);
-  const userSnap = await userRef.get();
-
-  if (!userSnap.exists) {
-    return NextResponse.json({ error: "user_not_found" }, { status: 404 });
+  try {
+    await approveDeed(db, params.id, deed.userId, deed.pointsAwarded ?? 0, deed.cvConfidence ?? null);
+  } catch (e) {
+    if ((e as Error).message === "user_not_found") {
+      return NextResponse.json({ error: "user_not_found" }, { status: 404 });
+    }
+    throw e;
   }
-
-  const userData = userSnap.data()!;
-  const newPoints = (userData.carePoints ?? 0) + (deed.pointsAwarded ?? 0);
-  const newLevel =
-    [...LEVELS].reverse().find((l) => newPoints >= l.threshold)?.level ?? 1;
-
-  await Promise.all([
-    deedRef.update({ status: "approved", validatedAt: Date.now() }),
-    userRef.update({
-      carePoints: FieldValue.increment(deed.pointsAwarded ?? 0),
-      level: newLevel,
-    }),
-  ]);
 
   return NextResponse.json({ ok: true });
 }

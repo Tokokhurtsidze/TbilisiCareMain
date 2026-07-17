@@ -9,7 +9,6 @@ import {
   Home,
   PlusCircle,
   Trophy,
-  ShoppingBag,
   Newspaper,
   type LucideIcon,
 } from "lucide-react";
@@ -23,7 +22,6 @@ const HEADER_LINKS: { href: string; Icon: LucideIcon; key: string }[] = [
   { href: "/app", Icon: Home, key: "nav.home" },
   { href: "/app/submit", Icon: PlusCircle, key: "nav.submit" },
   { href: "/app/leaderboard", Icon: Trophy, key: "nav.leaderboard" },
-  { href: "/app/marketplace", Icon: ShoppingBag, key: "nav.market" },
   { href: "/app/news", Icon: Newspaper, key: "site.news" },
 ];
 
@@ -46,7 +44,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           </button>
 
           <Link href="/app" className="flex items-center gap-2 mr-auto">
-            <TbilisiLogo size={48} className="shrink-0" />
+            <TbilisiLogo size={36} className="shrink-0" />
           </Link>
 
           <nav
@@ -115,7 +113,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           <button
             onClick={() => setDrawerOpen(false)}
             className="h-10 w-10 grid place-items-center rounded-lg hover:bg-surface-subtle"
-            aria-label="Close"
+            aria-label={t("common.close")}
           >
             <X size={20} />
           </button>

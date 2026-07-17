@@ -24,8 +24,8 @@ npm run typecheck  # tsc --noEmit
 src/
   app/             # Next.js App Router pages
     auth/          # login, register
-    app/           # protected routes (home, submit, leaderboard, marketplace, profile, news)
-  components/      # UI components (AppShell, DeedCard, PostCard, etc.)
+    app/           # protected routes (home, submit, leaderboard, profile, news)
+  components/      # UI components (AppShell, OfficialPostCard, etc.)
   lib/             # firebase.ts, firebase-admin.ts, auth-context.tsx, i18n.tsx
   locales/         # ka.json, en.json, ru.json
   types/           # index.ts (UserDoc, Deed, TaskType, Level)
@@ -35,24 +35,21 @@ src/
 
 - Path alias: `@/*` → `./src/*`
 - `firebase-admin.ts` is server-only — never import in client components
-- Deed flow: user submits → Firestore `deeds/{id}` status=`pending` → CV validation via Cloud Function (not implemented yet)
-- Points/level stored denormalized on `users/{uid}`
+- Deed flow: user submits (proof mandatory; visual-change task types require before+after photos) → Firestore `deeds/{id}` status=`pending` → `POST /api/deeds/validate` runs an AI vision check (OpenRouter) → `approved` (points awarded server-side)/`rejected`/`review` (queued for the admin panel). See `src/lib/deed-admin.ts`.
+- Points/level are written server-only (Admin SDK) — Firestore rules block clients from writing `carePoints`/`level` or self-approving a deed. Points exist purely for the leaderboard/rating; there is no redemption or exchange feature.
+- Feed content: no user-authored free-text posts (removed). The feed shows approved deeds (`DeedCard`) and `officialPosts/{id}` — either hand-written City Hall announcements (`/admin/official-posts`) or AI-generated deed-doer spotlights auto-created on every deed approval (`src/lib/deed-admin.ts`).
 
 ## Firestore Collections
 
 | Collection | Purpose |
 |-----------|---------|
 | `users/{uid}` | profile, carePoints, level, reputationScore |
-| `deeds/{id}` | proof submissions (pending/approved/rejected) |
-| `rewards/{id}` | marketplace catalog |
-| `redemptions/{id}` | created server-side on reward redeem |
+| `deeds/{id}` | proof submissions (pending/approved/rejected/review) |
 
 ## Intentional Gaps (not implemented yet)
 
-- CV validation Cloud Function
 - Phone OTP / reCAPTCHA
-- Atomic reward redemption (point deduction)
-- Tbilisi Card / parking API integration
+- Cloud Function trigger for comment-count denormalization (currently best-effort client update)
 
 ## Env Setup
 

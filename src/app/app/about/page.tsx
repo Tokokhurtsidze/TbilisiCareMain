@@ -1,11 +1,19 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { Sparkles, Camera, ShieldCheck, Trophy } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { Card } from "@/components/ui/Card";
 
 export default function AboutPage() {
   const { t } = useI18n();
+  // Real, live counts — no more made-up marketing numbers.
+  const [stats, setStats] = useState<{ citizens: number; deeds: number; districts: number } | null>(null);
+  useEffect(() => {
+    fetch("/api/stats").then((r) => r.json()).then(setStats).catch(() => {});
+  }, []);
+  const fmt = (n: number | undefined) => (n === undefined ? "—" : n.toLocaleString());
+
   const steps = [
     { icon: Sparkles, body: t("page.about.how1") },
     { icon: Camera, body: t("page.about.how2") },
@@ -47,9 +55,9 @@ export default function AboutPage() {
       <section>
         <h2 className="text-lg font-semibold mb-3">{t("page.about.stats")}</h2>
         <div className="grid grid-cols-3 gap-3">
-          <Stat n="10,124" label={t("page.about.stat1")} />
-          <Stat n="48,210" label={t("page.about.stat2")} />
-          <Stat n="6" label={t("page.about.stat3")} />
+          <Stat n={fmt(stats?.citizens)} label={t("page.about.stat1")} />
+          <Stat n={fmt(stats?.deeds)} label={t("page.about.stat2")} />
+          <Stat n={String(stats?.districts ?? 6)} label={t("page.about.stat3")} />
         </div>
       </section>
     </div>
