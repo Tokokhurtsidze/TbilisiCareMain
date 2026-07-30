@@ -5,7 +5,8 @@ Gamified civic platform where Tbilisi residents earn points for good deeds.
 ## Stack
 
 - **Next.js 14** App Router + TypeScript 5.6 + React 18.3
-- **Firebase**: Auth (Google), Firestore, Storage, Admin SDK
+- **Firebase**: Auth (Google), Firestore, Admin SDK
+- **Supabase Storage**: proof photos/videos + avatars (Firebase Storage requires the paid Blaze plan for new buckets, so file storage lives outside Firebase — see Key Architecture Notes)
 - **UI**: Tailwind CSS 3.4, Lucide React icons, FiraGO font (Georgian)
 - **i18n**: Georgian (ka), English (en), Russian (ru) — `src/locales/`
 
@@ -34,7 +35,8 @@ src/
 ## Key Architecture Notes
 
 - Path alias: `@/*` → `./src/*`
-- `firebase-admin.ts` is server-only — never import in client components
+- `firebase-admin.ts` and `supabase-admin.ts` are server-only — never import in client components
+- File uploads (deed proof, avatar): client asks `POST /api/uploads/sign` (verifies the Firebase ID token, computes the storage path server-side from the uid so a user can't overwrite another user's files) → gets back a short-lived Supabase signed upload URL + the resulting public URL → browser `PUT`s the file straight to Supabase (bypasses our server entirely, so there's no Vercel function body-size cap on video proof uploads). See `src/app/api/uploads/sign/route.ts`, `src/app/app/submit/page.tsx`, `src/app/app/profile/page.tsx`.
 - Deed flow: user submits (proof mandatory; visual-change task types require before+after photos) → Firestore `deeds/{id}` status=`pending` → `POST /api/deeds/validate` runs an AI vision check (OpenRouter) → `approved` (points awarded server-side)/`rejected`/`review` (queued for the admin panel). See `src/lib/deed-admin.ts`.
 - Points/level are written server-only (Admin SDK) — Firestore rules block clients from writing `carePoints`/`level` or self-approving a deed. Points exist purely for the leaderboard/rating; there is no redemption or exchange feature.
 - Feed content: no user-authored free-text posts (removed). The feed shows approved deeds (`DeedCard`) and `officialPosts/{id}` — either hand-written City Hall announcements (`/admin/official-posts`) or AI-generated deed-doer spotlights auto-created on every deed approval (`src/lib/deed-admin.ts`).
@@ -53,4 +55,4 @@ src/
 
 ## Env Setup
 
-Copy `.env.local.example` → `.env.local` and fill Firebase web SDK keys.
+Copy `.env.local.example` → `.env.local` and fill Firebase web SDK keys, plus `SUPABASE_URL`/`SUPABASE_SERVICE_ROLE_KEY` (Supabase project → Settings → API). Requires a `proofs` bucket in Supabase Storage, set to public.

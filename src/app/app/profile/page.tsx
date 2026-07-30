@@ -2,9 +2,8 @@
 
 import { useRef, useState } from "react";
 import { doc, updateDoc } from "firebase/firestore";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { Camera, LogOut, Mail, Lock, User as UserIcon, Check, X } from "lucide-react";
-import { db, storage } from "@/lib/firebase";
+import { Camera, LogOut, Mail, Lock, User as UserIcon, Check, X, Flame, Pencil } from "lucide-react";
+import { db } from "@/lib/firebase";
 import { authErrorKey, useAuth } from "@/lib/auth-context";
 import { useI18n } from "@/lib/i18n";
 import { useTheme } from "@/lib/theme-context";
@@ -43,10 +42,23 @@ export default function ProfilePage() {
     setPhotoErr(null);
     setUploading(true);
     try {
-      const photoRef = ref(storage(), `users/${user.uid}/photo`);
-      await uploadBytes(photoRef, file, { contentType: file.type });
-      const url = await getDownloadURL(photoRef);
-      await updateField("photoURL", url);
+      const idToken = await user.getIdToken();
+      const signRes = await fetch("/api/uploads/sign", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${idToken}` },
+        body: JSON.stringify({ kind: "avatar", contentType: file.type }),
+      });
+      const signed = await signRes.json().catch(() => ({}));
+      if (!signRes.ok || !signed.signedUrl) {
+        throw new Error(signed.error ? `upload sign failed: ${signed.error}` : "upload sign failed");
+      }
+      const putRes = await fetch(signed.signedUrl, {
+        method: "PUT",
+        headers: { "Content-Type": file.type },
+        body: file,
+      });
+      if (!putRes.ok) throw new Error(`upload failed (${putRes.status})`);
+      await updateField("photoURL", signed.publicUrl);
     } catch (e) {
       setPhotoErr((e as Error).message);
     } finally {
@@ -89,6 +101,15 @@ export default function ProfilePage() {
             <p className="text-brand font-bold mt-1">
               {userDoc?.carePoints ?? 0} {t("home.points")}
             </p>
+            {(userDoc?.currentStreak ?? 0) > 0 && (
+              <p className="flex items-center gap-1 text-sm text-warning font-semibold mt-1">
+                <Flame size={14} className="shrink-0" />
+                {userDoc?.currentStreak} {t("streak.days")}
+                <span className="text-ink-secondary font-normal">
+                  · {t("streak.longest")} {userDoc?.longestStreak ?? 0}
+                </span>
+              </p>
+            )}
           </div>
         </div>
         <p className="text-xs text-ink-secondary mt-3">
@@ -209,7 +230,7 @@ function AccountRow({
       <div className="flex items-center gap-3">
         <span className="text-brand">{icon}</span>
         <div className="flex-1 min-w-0">
-          <p className="text-[11px] uppercase tracking-widest text-ink-secondary font-semibold">
+          <p className="text-[11px] uppercase tracking-widest text-ink-secondary font-semibold truncate">
             {label}
           </p>
           <p className="text-sm truncate">{value}</p>
@@ -217,15 +238,18 @@ function AccountRow({
         {!disabled && (
           <button
             onClick={() => setOpen(!open)}
-            className="text-sm text-brand font-medium px-2 py-1 rounded hover:bg-brand-soft whitespace-nowrap"
+            aria-label={
+              open
+                ? t("post.cancel")
+                : mode === "name"
+                  ? t("profile.changeName")
+                  : mode === "email"
+                    ? t("profile.changeEmail")
+                    : t("profile.changePassword")
+            }
+            className="h-8 w-8 shrink-0 grid place-items-center rounded-lg text-brand hover:bg-brand-soft transition-colors"
           >
-            {open
-              ? t("post.cancel")
-              : mode === "name"
-                ? t("profile.changeName")
-                : mode === "email"
-                  ? t("profile.changeEmail")
-                  : t("profile.changePassword")}
+            {open ? <X size={16} /> : <Pencil size={16} />}
           </button>
         )}
       </div>

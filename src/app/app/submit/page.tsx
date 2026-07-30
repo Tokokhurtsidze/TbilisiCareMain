@@ -22,12 +22,7 @@ import {
   serverTimestamp,
   writeBatch,
 } from "firebase/firestore";
-import {
-  getDownloadURL,
-  ref,
-  uploadBytesResumable,
-} from "firebase/storage";
-import { db, storage } from "@/lib/firebase";
+import { db } from "@/lib/firebase";
 import { useAuth } from "@/lib/auth-context";
 import { useI18n } from "@/lib/i18n";
 import { Button } from "@/components/ui/Button";
@@ -107,37 +102,57 @@ export default function SubmitPage() {
     !!user &&
     !!userDoc;
 
-  const UPLOAD_TIMEOUT_MS = 15_000;
+  const UPLOAD_STALL_TIMEOUT_MS = 30_000;
 
-  const uploadProof = (file: File, deedId: string, slot: "before" | "after"): Promise<string> =>
-    new Promise((resolve, reject) => {
-      if (!user) return reject(new Error("no user"));
-      const ext = file.type.startsWith("video/") ? "mp4" : "jpg";
-      const proofRef = ref(storage(), `deeds/${user.uid}/${deedId}/${slot}.${ext}`);
-      const task = uploadBytesResumable(proofRef, file, { contentType: file.type });
-
-      const timer = setTimeout(() => {
-        task.cancel();
-        reject(new Error("upload timed out (15s)"));
-      }, UPLOAD_TIMEOUT_MS);
-
-      task.on(
-        "state_changed",
-        (s) => setProgress(Math.round((s.bytesTransferred / s.totalBytes) * 100)),
-        (err) => {
-          clearTimeout(timer);
-          reject(err);
-        },
-        async () => {
-          clearTimeout(timer);
-          try {
-            resolve(await getDownloadURL(task.snapshot.ref));
-          } catch (e) {
-            reject(e);
-          }
-        },
-      );
+  const uploadProof = async (file: File, deedId: string, slot: "before" | "after"): Promise<string> => {
+    if (!user) throw new Error("no user");
+    const idToken = await user.getIdToken();
+    const signRes = await fetch("/api/uploads/sign", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${idToken}` },
+      body: JSON.stringify({ kind: "deed", deedId, slot, contentType: file.type }),
     });
+    const signed = await signRes.json().catch(() => ({}));
+    if (!signRes.ok || !signed.signedUrl) {
+      throw new Error(signed.error ? `upload sign failed: ${signed.error}` : "upload sign failed");
+    }
+
+    return new Promise<string>((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      xhr.open("PUT", signed.signedUrl);
+      xhr.setRequestHeader("Content-Type", file.type);
+
+      // Timeout resets on every progress tick — only fires if the upload actually stalls,
+      // not just because a large file is slow on a weak connection.
+      let timer: ReturnType<typeof setTimeout>;
+      const arm = () => {
+        clearTimeout(timer);
+        timer = setTimeout(() => {
+          xhr.abort();
+          reject(new Error("upload stalled (no progress for 30s)"));
+        }, UPLOAD_STALL_TIMEOUT_MS);
+      };
+      arm();
+
+      xhr.upload.onprogress = (e) => {
+        if (e.lengthComputable) setProgress(Math.round((e.loaded / e.total) * 100));
+        arm();
+      };
+      xhr.onerror = () => {
+        clearTimeout(timer);
+        reject(new Error("upload failed"));
+      };
+      xhr.onload = () => {
+        clearTimeout(timer);
+        if (xhr.status >= 200 && xhr.status < 300) {
+          resolve(signed.publicUrl);
+        } else {
+          reject(new Error(`upload failed (${xhr.status})`));
+        }
+      };
+      xhr.send(file);
+    });
+  };
 
   const reset = () => {
     setBefore(null);
@@ -267,7 +282,7 @@ export default function SubmitPage() {
 
       <Card>
         <p className="text-xs font-bold uppercase tracking-wider text-ink-secondary mb-3">{t("submit.choose")}</p>
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
           {TASK_TYPES.map((tt) => {
             const Icon = SUBMIT_ICONS[tt.icon as keyof typeof SUBMIT_ICONS];
             const active = taskType === tt.id;
@@ -281,10 +296,10 @@ export default function SubmitPage() {
                     : "bg-surface-subtle border-line text-ink-primary hover:border-brand hover:bg-brand-soft"
                 }`}
               >
-                <div className={`mt-0.5 rounded-lg p-1.5 ${active ? "bg-white/20" : "bg-surface-base"}`}>
+                <div className={`mt-0.5 rounded-lg p-1.5 shrink-0 ${active ? "bg-white/20" : "bg-surface-base"}`}>
                   {Icon && <Icon size={16} className={active ? "text-white" : "text-brand"} strokeWidth={1.7} />}
                 </div>
-                <div>{t(`task.${tt.id}`)}</div>
+                <div className="min-w-0">{t(`task.${tt.id}`)}</div>
               </button>
             );
           })}
