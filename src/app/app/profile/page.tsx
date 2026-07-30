@@ -2,7 +2,7 @@
 
 import { useRef, useState } from "react";
 import { doc, updateDoc } from "firebase/firestore";
-import { Camera, LogOut, Mail, Lock, User as UserIcon, Check, X, Flame, Pencil } from "lucide-react";
+import { Camera, LogOut, Mail, Lock, User as UserIcon, Check, X, Pencil } from "lucide-react";
 import { db } from "@/lib/firebase";
 import { authErrorKey, useAuth } from "@/lib/auth-context";
 import { useI18n } from "@/lib/i18n";
@@ -101,15 +101,6 @@ export default function ProfilePage() {
             <p className="text-brand font-bold mt-1">
               {userDoc?.carePoints ?? 0} {t("home.points")}
             </p>
-            {(userDoc?.currentStreak ?? 0) > 0 && (
-              <p className="flex items-center gap-1 text-sm text-warning font-semibold mt-1">
-                <Flame size={14} className="shrink-0" />
-                {userDoc?.currentStreak} {t("streak.days")}
-                <span className="text-ink-secondary font-normal">
-                  · {t("streak.longest")} {userDoc?.longestStreak ?? 0}
-                </span>
-              </p>
-            )}
           </div>
         </div>
         <p className="text-xs text-ink-secondary mt-3">
