@@ -102,7 +102,7 @@ export function AIChatWidget() {
       <button
         onClick={() => setOpen((o) => !o)}
         aria-label={t("ai.button_label")}
-        className="fixed bottom-20 right-4 z-50 md:bottom-6 md:right-6 flex items-center gap-2 bg-brand text-white rounded-full shadow-lg px-4 py-3 hover:opacity-90 transition-opacity"
+        className="fixed bottom-16 sm:bottom-20 md:bottom-6 right-3.5 sm:right-4 md:right-6 z-40 h-11 w-11 p-0 rounded-full sm:w-auto sm:h-auto sm:px-4 sm:py-2.5 flex items-center justify-center gap-2 bg-brand text-white shadow-lg hover:opacity-90 transition-all duration-200"
       >
         <MessageCircle size={20} />
         <span className="text-sm font-medium hidden sm:inline">

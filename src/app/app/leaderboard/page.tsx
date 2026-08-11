@@ -29,20 +29,20 @@ function PodiumCard({
   const isFirst = rank === 1;
 
   return (
-    <div className={`flex flex-col items-center gap-2 animate-pop-in ${isFirst ? "stagger-1" : rank === 2 ? "" : "stagger-2"}`}>
-      {isFirst && <Crown size={22} className="text-amber-400 animate-hero-float" />}
-      <div className={`relative rounded-2xl border border-line bg-surface-elevated p-4 w-full text-center transition-all duration-200 hover:shadow-[var(--shadow-lg)] hover:-translate-y-1 ${isFirst ? "ring-2 ring-amber-400/40 shadow-[0_4px_20px_rgba(245,158,11,0.15)]" : ""}`}>
-        <div className={`inline-flex h-7 w-7 rounded-full items-center justify-center text-xs font-extrabold mb-3 ${rankClass}`}>
+    <div className={`flex flex-col items-center gap-1.5 sm:gap-2 animate-pop-in ${isFirst ? "stagger-1" : rank === 2 ? "" : "stagger-2"}`}>
+      {isFirst && <Crown size={20} className="text-amber-400 animate-hero-float" />}
+      <div className={`relative rounded-2xl border border-line bg-surface-elevated p-2 sm:p-4 w-full text-center transition-all duration-200 hover:shadow-[var(--shadow-lg)] hover:-translate-y-1 ${isFirst ? "ring-2 ring-amber-400/40 shadow-[0_4px_20px_rgba(245,158,11,0.15)]" : ""}`}>
+        <div className={`inline-flex h-6 w-6 sm:h-7 sm:w-7 rounded-full items-center justify-center text-[10px] sm:text-xs font-extrabold mb-1.5 sm:mb-3 ${rankClass}`}>
           {rank}
         </div>
-        <div className="flex justify-center mb-2">
-          <Avatar user={u} size={isFirst ? 14 : 12} />
+        <div className="flex justify-center mb-1.5 sm:mb-2">
+          <Avatar user={u} size={isFirst ? 12 : 10} />
         </div>
-        <p className="font-bold text-sm truncate leading-tight">{u.fullName}</p>
+        <p className="font-bold text-xs sm:text-sm truncate leading-tight">{u.fullName}</p>
         {isYou && (
-          <span className="text-[10px] text-brand font-bold">({label})</span>
+          <span className="text-[9px] sm:text-[10px] text-brand font-bold">({label})</span>
         )}
-        <p className={`font-extrabold mt-2 tabular-nums ${isFirst ? "text-xl text-brand" : "text-base text-ink-primary"}`}>
+        <p className={`font-extrabold mt-1 sm:mt-2 tabular-nums ${isFirst ? "text-base sm:text-xl text-brand" : "text-xs sm:text-base text-ink-primary"}`}>
           {u.carePoints.toLocaleString()}
         </p>
       </div>
@@ -74,7 +74,6 @@ export default function LeaderboardPage() {
   }, []);
 
   const map = new Map<string, UserDoc>();
-  if (SHOW_DEMO_CONTENT) for (const u of DEMO_USERS) map.set(u.id, u);
   for (const u of realRows) map.set(u.id, u);
   if (user && userDoc) map.set(user.uid, { ...userDoc, id: user.uid });
   const rows = [...map.values()].sort((a, b) => b.carePoints - a.carePoints);

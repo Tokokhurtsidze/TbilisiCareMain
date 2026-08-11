@@ -54,10 +54,9 @@ export default function AboutPage() {
 
       <section>
         <h2 className="text-lg font-semibold mb-3">{t("page.about.stats")}</h2>
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-2 gap-2 sm:gap-4">
           <Stat n={fmt(stats?.citizens)} label={t("page.about.stat1")} />
           <Stat n={fmt(stats?.deeds)} label={t("page.about.stat2")} />
-          <Stat n={String(stats?.districts ?? 6)} label={t("page.about.stat3")} />
         </div>
       </section>
     </div>
@@ -66,9 +65,11 @@ export default function AboutPage() {
 
 function Stat({ n, label }: { n: string; label: string }) {
   return (
-    <div className="rounded-2xl bg-surface-elevated border border-line p-4 text-center">
-      <p className="text-2xl font-bold text-brand">{n}</p>
-      <p className="text-xs text-ink-secondary mt-1">{label}</p>
+    <div className="rounded-2xl bg-surface-elevated border border-line p-2 sm:p-4 text-center min-w-0 flex flex-col justify-center items-center overflow-hidden">
+      <p className="text-lg sm:text-2xl font-bold text-brand leading-tight">{n}</p>
+      <p className="text-[10px] sm:text-xs text-ink-secondary mt-1 font-medium leading-tight max-w-full break-words text-center px-1">
+        {label}
+      </p>
     </div>
   );
 }

@@ -43,7 +43,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             <Menu size={21} />
           </button>
 
-          <Link href="/app" className="flex items-center gap-2 mr-auto">
+          <Link href="/app" className="hidden md:flex items-center gap-2 mr-auto">
             <TbilisiLogo size={36} className="shrink-0" />
           </Link>
 
@@ -74,7 +74,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
           <Link
             href="/app/profile"
-            className="h-9 w-9 rounded-full bg-surface-subtle grid place-items-center overflow-hidden hover:ring-2 hover:ring-brand hover:ring-offset-1 hover:ring-offset-surface-base transition-all duration-150"
+            className="ml-auto h-9 w-9 rounded-full bg-surface-subtle grid place-items-center overflow-hidden hover:ring-2 hover:ring-brand hover:ring-offset-1 hover:ring-offset-surface-base transition-all duration-150"
             aria-label={t("profile.title")}
           >
             <UserAvatar src={userDoc?.photoURL} size={9} />
@@ -109,7 +109,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         aria-label={t("site.menu")}
       >
         <div className="h-14 flex items-center justify-between px-4 border-b border-line">
-          <span className="font-semibold">{t("site.menu")}</span>
+          <TbilisiLogo size={32} className="shrink-0" />
           <button
             onClick={() => setDrawerOpen(false)}
             className="h-10 w-10 grid place-items-center rounded-lg hover:bg-surface-subtle"

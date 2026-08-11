@@ -15,6 +15,14 @@ export type UserDoc = {
   consentSpotlight: boolean;
   photoURL: string | null;
   createdAt: number;
+  // Consecutive-day approved-deed streak — written server-only (Admin SDK)
+  // in deed-admin.ts, same trust boundary as carePoints/level.
+  currentStreak: number;
+  longestStreak: number;
+  // "YYYY-MM-DD" in Asia/Tbilisi of the last approved deed; null until the
+  // user's first one. Day-granularity string, not a Timestamp, so streak
+  // math never depends on time-of-day or the reader's own timezone.
+  lastDeedDate: string | null;
 };
 
 export type DeedStatus = "pending" | "approved" | "rejected" | "review";
@@ -115,6 +123,17 @@ export type OfficialPost = {
   authorName?: string | null;
   authorPhotoURL?: string | null;
   source?: "admin" | "ai";
+};
+
+// Admin-authored, one per ISO week (doc id e.g. "2026-W03") — same
+// hand-written pattern as OfficialPost, never AI-generated. Client reads it
+// to render a progress bar; only the Admin SDK ever writes it.
+export type WeeklyChallenge = {
+  id: string;
+  taskTypeId: TaskTypeId;
+  targetCount: number;
+  bonusPoints: number;
+  createdAt: number;
 };
 
 export type Level = {

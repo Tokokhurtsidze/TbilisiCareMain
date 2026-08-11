@@ -83,6 +83,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             consentSpotlight: true,
             photoURL: fbUser.photoURL ?? null,
             createdAt: Date.now(),
+            currentStreak: 0,
+            longestStreak: 0,
+            lastDeedDate: null,
           };
           await setDoc(ref, { ...fresh, createdAt: serverTimestamp() });
           // Send welcome email for all new users (email/password + Google)

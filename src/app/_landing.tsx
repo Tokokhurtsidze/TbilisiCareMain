@@ -87,7 +87,7 @@ export default function LandingClient() {
       {/* ── HEADER ─────────────────────────────────────────────────────── */}
       <header suppressHydrationWarning className="sticky top-0 z-30 bg-surface-base/90 backdrop-blur border-b border-line">
         <div suppressHydrationWarning className="max-w-6xl mx-auto flex items-center justify-between px-4 py-3">
-          <TbilisiLogo size={40} className="shrink-0" />
+          <TbilisiLogo size={40} className="hidden sm:block shrink-0" />
 
           {/* Desktop controls */}
           <div suppressHydrationWarning className="hidden sm:flex items-center gap-1.5">
@@ -107,10 +107,10 @@ export default function LandingClient() {
             </Link>
           </div>
 
-          {/* Mobile: burger only — sign-up/sign-in/lang/theme all live in the drawer */}
+          {/* Mobile: burger only — logo moves into the drawer, sign-up/sign-in/lang/theme too */}
           <button
             onClick={() => setMenuOpen(true)}
-            className="sm:hidden h-9 w-9 grid place-items-center rounded-lg hover:bg-surface-subtle transition-colors shrink-0"
+            className="sm:hidden ml-auto h-9 w-9 grid place-items-center rounded-lg hover:bg-surface-subtle transition-colors shrink-0"
             aria-label={t("site.menu")}
           >
             <Menu size={20} />
@@ -134,7 +134,7 @@ export default function LandingClient() {
         aria-label={t("site.menu")}
       >
         <div className="h-14 flex items-center justify-between px-4 border-b border-line">
-          <span className="font-semibold">{t("site.menu")}</span>
+          <TbilisiLogo size={32} className="shrink-0" />
           <button
             onClick={() => setMenuOpen(false)}
             className="h-10 w-10 grid place-items-center rounded-lg hover:bg-surface-subtle"
@@ -175,15 +175,15 @@ export default function LandingClient() {
       {/* ── HERO ───────────────────────────────────────────────────────── */}
       <section className="hero-atmosphere max-w-7xl mx-auto px-6 pt-16 pb-20 grid lg:grid-cols-2 gap-12 items-center">
         {/* Left */}
-        <div className="relative z-10">
+        <div className="relative z-10 min-w-0">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-brand/8 border border-brand/20 text-brand text-sm font-semibold mb-6 animate-slide-up">
             <Sparkles size={14} />
             {t("app.tagline")}
           </div>
-          <h1 className="font-display text-5xl lg:text-6xl font-semibold leading-[1.08] text-ink-primary tracking-tight mb-5 animate-slide-up stagger-1">
+          <h1 className="font-display text-3xl sm:text-5xl lg:text-6xl font-bold leading-[1.15] text-ink-primary tracking-tight mb-5 animate-slide-up stagger-1 [word-break:keep-all] [overflow-wrap:normal]">
             {t("landing.headline")}
           </h1>
-          <p className="text-lg text-ink-secondary leading-relaxed max-w-md mb-8 animate-slide-up stagger-2">
+          <p className="text-base sm:text-lg text-ink-secondary leading-relaxed max-w-md mb-8 animate-slide-up stagger-2">
             {t("landing.sub")}
           </p>
           <div className="flex items-center gap-3 flex-wrap animate-slide-up stagger-3">
@@ -199,22 +199,22 @@ export default function LandingClient() {
           </div>
 
           {/* Trust row */}
-          <div className="mt-10 flex items-start gap-8 flex-wrap animate-slide-up stagger-4">
+          <div className="mt-10 flex items-start gap-6 sm:gap-8 flex-wrap animate-slide-up stagger-4">
             {[
               { n: fmt(stats?.citizens), label: t("landing.stats.citizens") },
               { n: fmt(stats?.deeds), label: t("landing.stats.deeds") },
-              { n: String(stats?.districts ?? 6), label: t("landing.stats.districts") },
+              { n: fmt(stats?.points), label: t("landing.stats.points") },
             ].map(({ n, label }) => (
-              <div key={label}>
-                <p className="font-display text-2xl font-semibold text-brand leading-none">{n}</p>
-                <p className="text-xs text-ink-secondary mt-1 max-w-[7rem]">{label}</p>
+              <div key={label} className="min-w-0">
+                <p className="font-display text-xl sm:text-2xl font-semibold text-brand leading-none">{n}</p>
+                <p className="text-[11px] sm:text-xs text-ink-secondary mt-1 max-w-[7.5rem] leading-tight font-medium">{label}</p>
               </div>
             ))}
           </div>
         </div>
 
         {/* Right — staggered photo collage */}
-        <div className="relative z-10 animate-scale-in stagger-2">
+        <div className="relative z-10 min-w-0 animate-scale-in stagger-2">
           {/* Decorative border frames — desktop only, they overlap awkwardly on narrow phones */}
           <div className="hidden sm:block absolute top-4 left-4 w-[48%] h-[48%] border-2 border-brand/40 rounded-2xl pointer-events-none z-10" />
           <div className="hidden sm:block absolute bottom-0 right-2 w-[50%] h-[52%] border-2 border-brand/30 rounded-2xl pointer-events-none z-10" />
@@ -242,17 +242,18 @@ export default function LandingClient() {
 
       {/* ── STATS BAND ─────────────────────────────────────────────────── */}
       <section className="bg-surface-elevated border-y border-line">
-        <div className="max-w-7xl mx-auto px-6 py-6">
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
+          <div className="grid grid-cols-3 gap-2 sm:gap-6">
             {[
               { n: fmt(stats?.citizens), label: t("landing.stats.citizens") },
               { n: fmt(stats?.deeds), label: t("landing.stats.deeds") },
               { n: fmt(stats?.points), label: t("landing.stats.points") },
-              { n: String(stats?.districts ?? 6), label: t("landing.stats.districts") },
             ].map(({ n, label }) => (
-              <div key={label} className="text-center py-2">
-                <p className="text-3xl font-extrabold text-brand tracking-tight">{n}</p>
-                <p className="text-xs text-ink-secondary mt-1 font-medium uppercase tracking-wide">{label}</p>
+              <div key={label} className="text-center py-2 min-w-0 flex flex-col items-center justify-center">
+                <p className="text-xl sm:text-3xl font-extrabold text-brand tracking-tight leading-none">{n}</p>
+                <p className="text-[10px] sm:text-xs text-ink-secondary mt-1.5 font-medium uppercase tracking-wide leading-tight max-w-full px-1 text-center">
+                  {label}
+                </p>
               </div>
             ))}
           </div>
@@ -363,9 +364,9 @@ export default function LandingClient() {
       <section className="max-w-7xl mx-auto px-6 py-16">
         <h2 className="font-display text-3xl font-semibold text-center tracking-tight mb-8">{t("landing.testimonials.title")}</h2>
         <div className="grid sm:grid-cols-3 gap-5">
-          <Quote text={t("landing.testimonials.q1")} author={t("landing.testimonials.q1.author")} seed="nino-vake" />
-          <Quote text={t("landing.testimonials.q2")} author={t("landing.testimonials.q2.author")} seed="giorgi-saburtalo" />
-          <Quote text={t("landing.testimonials.q3")} author={t("landing.testimonials.q3.author")} seed="babo-tamuna" />
+          <Quote text={t("landing.testimonials.q1")} author={t("landing.testimonials.q1.author")} seed="nino-f" isFemale />
+          <Quote text={t("landing.testimonials.q2")} author={t("landing.testimonials.q2.author")} seed="giorgi-m" />
+          <Quote text={t("landing.testimonials.q3")} author={t("landing.testimonials.q3.author")} seed="babo-tamuna-f" isFemale />
         </div>
       </section>
 
@@ -435,7 +436,11 @@ export default function LandingClient() {
   );
 }
 
-function Quote({ text, author, seed }: { text: string; author: string; seed: string }) {
+function Quote({ text, author, seed, isFemale }: { text: string; author: string; seed: string; isFemale?: boolean }) {
+  const avatarUrl = isFemale
+    ? `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(seed)}&top=longHair,straight01,curly,bob&facialHairChance=0`
+    : `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(seed)}&top=shortHair,shortFlat,sides&facialHairChance=30`;
+
   return (
     <figure className="rounded-2xl border border-line bg-white dark:bg-surface-elevated p-6 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
       <div className="text-brand text-3xl font-serif leading-none mb-3 opacity-30">&ldquo;</div>
@@ -443,7 +448,7 @@ function Quote({ text, author, seed }: { text: string; author: string; seed: str
       <figcaption className="mt-5 flex items-center gap-3 pt-4 border-t border-line">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(seed)}`}
+          src={avatarUrl}
           alt=""
           className="h-9 w-9 rounded-full bg-surface-subtle"
         />

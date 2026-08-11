@@ -1,5 +1,6 @@
-import { FieldValue, type Firestore } from "firebase-admin/firestore";
-import { LEVELS, type Locale, type Localized } from "@/types";
+import { FieldValue, Timestamp, type Firestore } from "firebase-admin/firestore";
+import { LEVELS, type Locale, type Localized, type TaskTypeId } from "@/types";
+import { computeStreak, isoWeekId, weekStartMs, STREAK_MILESTONES } from "@/lib/week";
 
 // Server-only (Admin SDK). Shared by the manual admin moderation route and
 // the AI validation route so points are only ever awarded in one place.
@@ -30,7 +31,16 @@ export async function approveDeed(
   const deed = deedSnap.data() ?? {};
   const userData = userSnap.data() ?? {};
 
-  const newPoints = (userData.carePoints ?? 0) + points;
+  const streak = computeStreak(
+    userData.lastDeedDate ?? null,
+    userData.currentStreak ?? 0,
+    userData.longestStreak ?? 0,
+  );
+  const milestoneBonus = streak.isNewDay ? (STREAK_MILESTONES[streak.currentStreak] ?? 0) : 0;
+  const challengeBonus = await weeklyChallengeBonus(db, userId, deed.taskTypeId as TaskTypeId);
+  const bonus = milestoneBonus + challengeBonus;
+
+  const newPoints = (userData.carePoints ?? 0) + points + bonus;
   const newLevel =
     [...LEVELS].reverse().find((l) => newPoints >= l.threshold)?.level ?? 1;
 
@@ -43,13 +53,16 @@ export async function approveDeed(
       rejectionReason: null,
     }),
     userRef.update({
-      carePoints: FieldValue.increment(points),
+      carePoints: FieldValue.increment(points + bonus),
       level: newLevel,
+      currentStreak: streak.currentStreak,
+      longestStreak: streak.longestStreak,
+      lastDeedDate: streak.lastDeedDate,
     }),
     // Real, live counters for the landing page — replaces made-up marketing
     // numbers with actual usage as soon as there is any.
     db.doc("stats/global").set(
-      { totalPoints: FieldValue.increment(points), approvedDeeds: FieldValue.increment(1) },
+      { totalPoints: FieldValue.increment(points + bonus), approvedDeeds: FieldValue.increment(1) },
       { merge: true },
     ),
   ];
@@ -61,6 +74,49 @@ export async function approveDeed(
   }
 
   await Promise.all(tasks);
+}
+
+// Checks the current ISO week's admin-authored challenge (if any) against
+// this task type, and awards its bonus the moment the user's approved count
+// for that type this week reaches the target — once per user per week.
+// Counting the not-yet-committed current deed as +1 (rather than awaiting
+// deedRef.update first) keeps this on the same read-then-write shape as the
+// rest of approveDeed, no extra round trip needed.
+async function weeklyChallengeBonus(
+  db: Firestore,
+  userId: string,
+  taskTypeId: TaskTypeId | undefined,
+): Promise<number> {
+  if (!taskTypeId) return 0;
+  const week = isoWeekId();
+  const challengeRef = db.collection("weeklyChallenges").doc(week);
+  const challengeSnap = await challengeRef.get();
+  if (!challengeSnap.exists) return 0;
+  const challenge = challengeSnap.data() ?? {};
+  if (challenge.taskTypeId !== taskTypeId) return 0;
+
+  const completionRef = challengeRef.collection("completions").doc(userId);
+  const completionSnap = await completionRef.get();
+  if (completionSnap.exists) return 0; // already awarded this week
+
+  const priorCount = (
+    await db
+      .collection("deeds")
+      .where("userId", "==", userId)
+      .where("taskTypeId", "==", taskTypeId)
+      .where("status", "==", "approved")
+      .where("createdAt", ">=", Timestamp.fromMillis(weekStartMs()))
+      .count()
+      .get()
+  ).data().count;
+  const countIncludingThisOne = priorCount + 1;
+
+  const targetCount = (challenge.targetCount as number) ?? Infinity;
+  if (countIncludingThisOne < targetCount) return 0;
+
+  const bonusPoints = (challenge.bonusPoints as number) ?? 0;
+  await completionRef.set({ awardedAt: Date.now(), bonusPoints });
+  return bonusPoints;
 }
 
 // Every approved deed — AI or human-approved — gets an AI-authored spotlight

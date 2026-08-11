@@ -26,6 +26,7 @@ export function UserAvatar({ src, size, className = "" }: Props) {
       <img
         src={src}
         alt=""
+        referrerPolicy="no-referrer"
         className={`${sc} rounded-full object-cover shrink-0 ${className}`}
       />
     );

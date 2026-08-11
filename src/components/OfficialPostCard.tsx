@@ -29,25 +29,29 @@ export function OfficialPostCard({ post }: { post: OfficialPost }) {
   return (
     <article className="rounded-2xl bg-surface-elevated border border-line overflow-hidden card-hover">
       {/* Header */}
-      <header className="flex items-center gap-3 px-4 py-3.5 border-b border-line/60">
-        {post.authorPhotoURL ? (
-          <UserAvatar src={post.authorPhotoURL} size={10} className="ring-2 ring-surface-base shrink-0" />
-        ) : (
-          <TbilisiLogo size={28} className="shrink-0" />
-        )}
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-1.5">
-            <p className="font-bold text-sm leading-tight truncate">{post.authorName ?? "TbilisiCare"}</p>
-            <BadgeCheck size={15} className="text-brand shrink-0" fill="currentColor" />
+      <header className="flex items-center justify-between gap-2 px-3 py-2.5 border-b border-line/60">
+        <div className="flex items-center gap-2 min-w-0 flex-1">
+          {post.authorPhotoURL ? (
+            <UserAvatar src={post.authorPhotoURL} size={8} className="ring-2 ring-surface-base shrink-0" />
+          ) : (
+            <TbilisiLogo size={24} className="shrink-0" />
+          )}
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-1 min-w-0">
+              <p className="font-bold text-xs sm:text-sm leading-none text-ink-primary">{post.authorName ?? "TbilisiCare"}</p>
+              <BadgeCheck size={13} className="text-brand shrink-0" fill="currentColor" />
+            </div>
+            <p className="text-[10px] sm:text-[11px] text-ink-secondary flex items-center gap-1 mt-0.5 leading-none whitespace-nowrap">
+              {post.source === "ai" ? <Sparkles size={9} className="text-brand shrink-0" /> : null}
+              <span>
+                {post.source === "ai" ? t("officialPost.verifiedByAi") : t("officialPost.official")} · {relativeTime(post.createdAt, locale)}
+              </span>
+            </p>
           </div>
-          <p className="text-xs text-ink-secondary flex items-center gap-1">
-            {post.source === "ai" ? <Sparkles size={11} className="text-brand" /> : null}
-            {post.source === "ai" ? t("officialPost.verifiedByAi") : t("officialPost.official")} · {relativeTime(post.createdAt, locale)}
-          </p>
         </div>
-        <span className={`inline-flex items-center gap-1 text-[11px] font-bold px-2 py-1 rounded-lg border whitespace-nowrap ${meta.color}`}>
-          <TagIcon size={11} strokeWidth={2.2} />
-          {t(meta.tKey)}
+        <span className={`inline-flex items-center gap-1 text-[9px] sm:text-[10px] font-bold px-1.5 py-0.5 rounded-md border shrink-0 ${meta.color}`}>
+          <TagIcon size={10} strokeWidth={2.2} className="shrink-0" />
+          <span>{t(meta.tKey)}</span>
         </span>
       </header>
 

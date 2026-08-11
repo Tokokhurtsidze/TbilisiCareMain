@@ -23,14 +23,14 @@ type I18nCtx = {
 const Ctx = createContext<I18nCtx | null>(null);
 
 export function I18nProvider({ children }: { children: ReactNode }) {
-  const [locale, setLocaleState] = useState<Locale>("ka");
+  const [locale, setLocaleState] = useState<Locale>("en");
 
   useEffect(() => {
     const saved = (typeof window !== "undefined"
       ? localStorage.getItem("locale")
       : null) as Locale | null;
     if (saved && DICTS[saved]) setLocaleState(saved);
-    document.documentElement.lang = saved ?? "ka";
+    document.documentElement.lang = saved ?? "en";
   }, []);
 
   const setLocale = (l: Locale) => {

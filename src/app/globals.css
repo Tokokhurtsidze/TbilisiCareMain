@@ -77,10 +77,29 @@ body {
 :lang(ka) [data-uppercase] {
   text-transform: none !important;
 }
-/* Tighten Georgian headings — Noto Sans Georgian bold can feel loose */
+/* Tighten Georgian headings — Noto Sans Georgian bold can feel loose. */
 :lang(ka) h1, :lang(ka) h2, :lang(ka) h3 {
   letter-spacing: -0.01em;
   line-height: 1.25;
+}
+
+/* Mobile-only: Mkhedruli glyphs fill more of the em box than Latin/
+   Cyrillic ones, so full-bold + full-size headings feel oversized on a
+   narrow phone. Desktop is intentionally untouched here — keep the
+   original Tailwind weight/size above 640px. Semibold (not full bold, not
+   fully regular) and sizes stepped down partway, not all the way. */
+@media (max-width: 639px) {
+  :lang(ka) h1, :lang(ka) h2, :lang(ka) h3, :lang(ka) h4, :lang(ka) h5, :lang(ka) h6 {
+    font-weight: 600;
+  }
+  :lang(ka) h1.text-6xl { font-size: 3.25rem; }
+  :lang(ka) h1.text-5xl { font-size: 2.625rem; }
+  :lang(ka) h1.text-3xl { font-size: 1.75rem; }
+  :lang(ka) h1.text-2xl { font-size: 1.375rem; }
+  :lang(ka) h2.text-4xl { font-size: 1.875rem; }
+  :lang(ka) h2.text-3xl { font-size: 1.5rem; }
+  :lang(ka) h2.text-2xl { font-size: 1.25rem; }
+  :lang(ka) h2.text-lg { font-size: 1.0625rem; }
 }
 /* Small text / badges in Georgian need slightly more size */
 :lang(ka) .text-xs {
@@ -88,6 +107,19 @@ body {
 }
 :lang(ka) .text-\[10px\], :lang(ka) .text-\[11px\] {
   font-size: 0.75rem;
+}
+
+/* Safety net for long-form Georgian copy (headlines, body text) that may
+   contain a compound word wider than its container even at full width.
+   Scoped to headings/paragraphs only — NOT buttons/spans/list items, which
+   are usually compact single-line labels that should truncate or shrink
+   their layout instead of fragmenting mid-word. Applying this broadly to
+   every element previously combined with flex/grid shrinking to break
+   words into single-character columns in compact rows (account rows, card
+   grids) — worse than the overflow it was meant to fix. */
+:lang(ka) h1, :lang(ka) h2, :lang(ka) h3 {
+  overflow-wrap: normal;
+  word-break: keep-all;
 }
 
 

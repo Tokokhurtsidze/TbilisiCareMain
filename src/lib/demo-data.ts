@@ -6,8 +6,11 @@ import type { Comment, Deed, OfficialPost, ProofType, UserDoc } from "@/types";
 // (leaderboard rows, feed posts) so nothing hardcodes fake people permanently.
 export const SHOW_DEMO_CONTENT = process.env.NEXT_PUBLIC_SHOW_DEMO_CONTENT !== "false";
 
-const av = (seed: string) =>
-  `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(seed)}`;
+const avMale = (seed: string) =>
+  `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(seed)}&top=shortHair,shortFlat,shortRound,shortWaved,sides,caesar&facialHairChance=30`;
+
+const avFemale = (seed: string) =>
+  `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(seed)}&top=longHair,straight01,straight02,curly,bigHair,bob,dreads,frida,fro&facialHairChance=0`;
 
 // Public sample videos (Google CDN, stable for years, small enough for demo).
 const V = {
@@ -43,8 +46,11 @@ export const DEMO_USERS: UserDoc[] = [
     elderMode: false,
     consentLeaderboard: true,
     consentSpotlight: true,
-    photoURL: av("giorgi-beridze"),
+    photoURL: avMale("giorgi-m"),
     createdAt: Date.now() - 1000 * 60 * 60 * 24 * 220,
+    currentStreak: 0,
+    longestStreak: 0,
+    lastDeedDate: null,
   },
   {
     id: "demo-u2",
@@ -57,8 +63,11 @@ export const DEMO_USERS: UserDoc[] = [
     elderMode: false,
     consentLeaderboard: true,
     consentSpotlight: true,
-    photoURL: av("nino-kapanadze"),
+    photoURL: avFemale("nino-f"),
     createdAt: Date.now() - 1000 * 60 * 60 * 24 * 180,
+    currentStreak: 0,
+    longestStreak: 0,
+    lastDeedDate: null,
   },
   {
     id: "demo-u3",
@@ -71,8 +80,11 @@ export const DEMO_USERS: UserDoc[] = [
     elderMode: false,
     consentLeaderboard: true,
     consentSpotlight: true,
-    photoURL: av("levan-tsiklauri"),
+    photoURL: avMale("levan-m"),
     createdAt: Date.now() - 1000 * 60 * 60 * 24 * 160,
+    currentStreak: 0,
+    longestStreak: 0,
+    lastDeedDate: null,
   },
   {
     id: "demo-u4",
@@ -85,8 +97,11 @@ export const DEMO_USERS: UserDoc[] = [
     elderMode: false,
     consentLeaderboard: true,
     consentSpotlight: true,
-    photoURL: av("mariam-khelaia"),
+    photoURL: avFemale("mariam-f"),
     createdAt: Date.now() - 1000 * 60 * 60 * 24 * 140,
+    currentStreak: 0,
+    longestStreak: 0,
+    lastDeedDate: null,
   },
   {
     id: "demo-u5",
@@ -99,8 +114,11 @@ export const DEMO_USERS: UserDoc[] = [
     elderMode: false,
     consentLeaderboard: true,
     consentSpotlight: true,
-    photoURL: av("davit-maisuradze"),
+    photoURL: avMale("davit-m"),
     createdAt: Date.now() - 1000 * 60 * 60 * 24 * 120,
+    currentStreak: 0,
+    longestStreak: 0,
+    lastDeedDate: null,
   },
   {
     id: "demo-u6",
@@ -113,8 +131,11 @@ export const DEMO_USERS: UserDoc[] = [
     elderMode: false,
     consentLeaderboard: true,
     consentSpotlight: true,
-    photoURL: av("tamar-gelashvili"),
+    photoURL: avFemale("tamar-f"),
     createdAt: Date.now() - 1000 * 60 * 60 * 24 * 100,
+    currentStreak: 0,
+    longestStreak: 0,
+    lastDeedDate: null,
   },
   {
     id: "demo-u7",
@@ -127,8 +148,11 @@ export const DEMO_USERS: UserDoc[] = [
     elderMode: false,
     consentLeaderboard: true,
     consentSpotlight: true,
-    photoURL: av("nika-chkheidze"),
+    photoURL: avMale("nika-m"),
     createdAt: Date.now() - 1000 * 60 * 60 * 24 * 80,
+    currentStreak: 0,
+    longestStreak: 0,
+    lastDeedDate: null,
   },
   {
     id: "demo-u8",
@@ -141,8 +165,11 @@ export const DEMO_USERS: UserDoc[] = [
     elderMode: false,
     consentLeaderboard: true,
     consentSpotlight: true,
-    photoURL: av("salome-lortkipanidze"),
+    photoURL: avFemale("salome-f"),
     createdAt: Date.now() - 1000 * 60 * 60 * 24 * 70,
+    currentStreak: 0,
+    longestStreak: 0,
+    lastDeedDate: null,
   },
   {
     id: "demo-u9",
@@ -155,8 +182,11 @@ export const DEMO_USERS: UserDoc[] = [
     elderMode: false,
     consentLeaderboard: true,
     consentSpotlight: true,
-    photoURL: av("irakli-gogichaishvili"),
+    photoURL: avMale("irakli-m"),
     createdAt: Date.now() - 1000 * 60 * 60 * 24 * 60,
+    currentStreak: 0,
+    longestStreak: 0,
+    lastDeedDate: null,
   },
   {
     id: "demo-u10",
@@ -169,8 +199,11 @@ export const DEMO_USERS: UserDoc[] = [
     elderMode: false,
     consentLeaderboard: true,
     consentSpotlight: true,
-    photoURL: av("tinatin-bagrationi"),
+    photoURL: avFemale("tinatin-f"),
     createdAt: Date.now() - 1000 * 60 * 60 * 24 * 50,
+    currentStreak: 0,
+    longestStreak: 0,
+    lastDeedDate: null,
   },
   {
     id: "demo-u11",
@@ -183,8 +216,11 @@ export const DEMO_USERS: UserDoc[] = [
     elderMode: false,
     consentLeaderboard: true,
     consentSpotlight: true,
-    photoURL: av("avto-kobakhidze"),
+    photoURL: avMale("avto-m"),
     createdAt: Date.now() - 1000 * 60 * 60 * 24 * 40,
+    currentStreak: 0,
+    longestStreak: 0,
+    lastDeedDate: null,
   },
   {
     id: "demo-u12",
@@ -197,8 +233,11 @@ export const DEMO_USERS: UserDoc[] = [
     elderMode: false,
     consentLeaderboard: true,
     consentSpotlight: true,
-    photoURL: av("ana-tatarashvili"),
+    photoURL: avFemale("ana-f"),
     createdAt: Date.now() - 1000 * 60 * 60 * 24 * 30,
+    currentStreak: 0,
+    longestStreak: 0,
+    lastDeedDate: null,
   },
 ];
 
@@ -364,7 +403,7 @@ export const DEMO_OFFICIAL_POSTS: OfficialPost[] = [
     ),
     imageUrl: TBILISI_IMAGES.cleanup,
     authorName: "Giorgi Beridze",
-    authorPhotoURL: av("giorgi-beridze"),
+    authorPhotoURL: avMale("giorgi-m"),
     source: "ai",
     stats: [
       { label: L("საქმეები ამ კვირას", "Deeds This Week", "Дел за неделю"), value: "47" },
@@ -450,7 +489,7 @@ export const DEMO_OFFICIAL_POSTS: OfficialPost[] = [
     ),
     imageUrl: TBILISI_IMAGES.community,
     authorName: "Tamar Gelashvili",
-    authorPhotoURL: av("tamar-gelashvili"),
+    authorPhotoURL: avFemale("tamar-f"),
     source: "ai",
     stats: [
       { label: L("ტიპი", "Task", "Задача"), value: "Senior help" },
@@ -476,7 +515,7 @@ export const DEMO_OFFICIAL_POSTS: OfficialPost[] = [
     ),
     imageUrl: P.stray,
     authorName: "Nino Kapanadze",
-    authorPhotoURL: av("nino-kapanadze"),
+    authorPhotoURL: avFemale("nino-f"),
     source: "ai",
     stats: [
       { label: L("ტიპი", "Task", "Задача"), value: "Stray feeding" },
@@ -500,7 +539,7 @@ export const DEMO_OFFICIAL_POSTS: OfficialPost[] = [
     ),
     imageUrl: TBILISI_IMAGES.cleanup,
     authorName: "Levan Tsiklauri",
-    authorPhotoURL: av("levan-tsiklauri"),
+    authorPhotoURL: avMale("levan-m"),
     source: "ai",
     stats: [
       { label: L("ტიპი", "Task", "Задача"), value: "Graffiti" },

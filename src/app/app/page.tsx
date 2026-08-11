@@ -23,6 +23,7 @@ import { Card } from "@/components/ui/Card";
 import { OfficialPostCard } from "@/components/OfficialPostCard";
 import { RealStoryCard } from "@/components/RealStoryCard";
 import { NewsRail } from "@/components/NewsRail";
+import { WeeklyChallengeCard } from "@/components/WeeklyChallengeCard";
 import { TASK_TYPES, LEVELS, levelFor, type OfficialPost } from "@/types";
 import { DEMO_OFFICIAL_POSTS, SHOW_DEMO_CONTENT } from "@/lib/demo-data";
 import type { CommunityFeedItem } from "@/app/api/community-feed/route";
@@ -140,19 +141,21 @@ export default function HomePage() {
         </div>
       </Card>
 
+      <WeeklyChallengeCard />
+
       <section>
-        <div className="grid grid-cols-5 gap-2">
+        <div className="grid grid-cols-5 gap-1.5 sm:gap-2">
           {TASK_TYPES.map((task) => {
             const Icon = ICONS[task.icon as keyof typeof ICONS];
             return (
               <Link
                 key={task.id}
                 href={`/app/submit?type=${task.id}`}
-                className="rounded-xl bg-surface-elevated border border-line p-2.5 flex flex-col items-center gap-1.5 hover:border-brand hover:bg-brand-soft hover:shadow-[var(--shadow-md)] transition-all duration-200 group"
+                className="rounded-xl bg-surface-elevated border border-line p-2 sm:p-2.5 flex flex-col items-center gap-1 sm:gap-1.5 hover:border-brand hover:bg-brand-soft hover:shadow-[var(--shadow-md)] transition-all duration-200 group"
                 title={t(`task.${task.id}`)}
               >
-                <Icon size={22} className="text-brand group-hover:scale-110 transition-transform duration-200" strokeWidth={1.6} />
-                <span className="text-[9px] font-semibold text-ink-secondary text-center leading-tight line-clamp-1">
+                <Icon size={20} className="text-brand group-hover:scale-110 transition-transform duration-200 shrink-0" strokeWidth={1.6} />
+                <span className="text-[9px] sm:text-[11px] font-semibold text-ink-secondary text-center leading-tight truncate max-w-full">
                   {t(`task.${task.id}`)}
                 </span>
               </Link>

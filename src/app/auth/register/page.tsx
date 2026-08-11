@@ -60,13 +60,13 @@ export default function RegisterPage() {
   };
 
   return (
-    <main className="min-h-screen grid place-items-center px-5 py-10">
+    <main className="min-h-screen grid place-items-center px-3.5 sm:px-5 py-6 sm:py-10">
       <div className="w-full max-w-sm">
-        <div className="flex justify-end mb-6">
+        <div className="flex justify-end mb-4 sm:mb-6">
           <LanguageSwitcher />
         </div>
 
-        <div className="rounded-2xl bg-surface-elevated border border-line shadow-card p-8">
+        <div className="rounded-2xl bg-surface-elevated border border-line shadow-card p-5 sm:p-8">
           <div className="flex justify-center mb-6">
             <TbilisiLogo size={56} />
           </div>

@@ -13,10 +13,12 @@ service cloud.firestore {
     match /users/{uid} {
       allow read: if signedIn();
       allow create: if isSelf(uid);
-      // carePoints/level are only ever written server-side (Admin SDK, after AI
-      // or human deed validation) — the client cannot self-award points.
+      // carePoints/level/streak fields are only ever written server-side
+      // (Admin SDK, after AI or human deed validation) — the client cannot
+      // self-award points or fake a streak.
       allow update: if isSelf(uid)
-        && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['carePoints', 'level']);
+        && !request.resource.data.diff(resource.data).affectedKeys()
+          .hasAny(['carePoints', 'level', 'currentStreak', 'longestStreak', 'lastDeedDate']);
       allow delete: if false;
     }
 
@@ -61,6 +63,19 @@ service cloud.firestore {
     match /officialPosts/{id} {
       allow read: if signedIn();
       allow write: if false;
+    }
+
+    // Weekly challenges — admin-authored (same pattern as officialPosts).
+    // Client reads the current week's doc to render a progress bar; the
+    // completions subcollection is an internal award-once ledger the Admin
+    // SDK checks server-side and clients never need to read.
+    match /weeklyChallenges/{weekId} {
+      allow read: if signedIn();
+      allow write: if false;
+
+      match /completions/{uid} {
+        allow read, write: if false;
+      }
     }
 
   }
