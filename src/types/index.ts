@@ -36,7 +36,9 @@ export type Deed = {
   authorPhotoURL: string | null;
   authorPoints: number;
   authorLevel: number;
-  taskTypeId: TaskTypeId;
+  // Null until the AI validation route classifies the proof — the citizen no
+  // longer picks a category at submission time.
+  taskTypeId: TaskTypeId | null;
   status: DeedStatus;
   declaredLat: number | null;
   declaredLng: number | null;

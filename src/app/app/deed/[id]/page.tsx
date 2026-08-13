@@ -210,10 +210,14 @@ export default function DeedDetailPage() {
         )}
 
         <div className="px-4 py-3 flex items-center justify-between flex-wrap gap-2">
-          <span className="inline-flex items-center gap-1 text-sm font-medium text-brand bg-brand-soft px-2.5 py-1 rounded-full">
-            <Award size={14} />
-            {t(`task.${deed.taskTypeId}`)}
-          </span>
+          {deed.taskTypeId ? (
+            <span className="inline-flex items-center gap-1 text-sm font-medium text-brand bg-brand-soft px-2.5 py-1 rounded-full">
+              <Award size={14} />
+              {t(`task.${deed.taskTypeId}`)}
+            </span>
+          ) : (
+            <span />
+          )}
           <span className="text-sm font-semibold text-success">
             {t("deed.points", { n: deed.pointsAwarded })}
           </span>

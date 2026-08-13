@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { adminAuth, adminDb } from "@/lib/firebase-admin";
 import { rejectDeed, flagForReview } from "@/lib/deed-admin";
-import { TASK_TYPES, midpointPoints, type TaskType } from "@/types";
+import { TASK_TYPES, type TaskTypeId } from "@/types";
 
 // Vision model used to grade proof photos. Configurable so it can be swapped
 // without a redeploy if OpenRouter deprecates a model.
@@ -13,13 +13,21 @@ const VISION_MODEL = process.env.OPENROUTER_VISION_MODEL || "openai/gpt-4o-mini"
 // the strict, no-auto-trust-the-AI policy: getting points always needs a human.
 const REJECT_THRESHOLD = 0.6;
 
-// There is no fixed payout per deed type — the model assesses the actual
-// effort/scale visible in the proof and picks a value inside the task's range.
-type Verdict = { verdict: "approve" | "reject" | "review"; confidence: number; reason: string; points: number };
+const DEFAULT_REVIEW_POINTS = 10;
+
+// The citizen no longer declares a category — the model both classifies which
+// known task type the before/after pair matches and scores it inside that
+// type's point range, in one call.
+type Verdict = {
+  verdict: "approve" | "reject" | "review";
+  confidence: number;
+  reason: string;
+  points: number;
+  taskTypeId: TaskTypeId | null;
+};
 
 type DeedRecord = {
   userId: string;
-  taskTypeId: string;
   status: string;
   proofUrl: string | null;
   proofBeforeUrl: string | null;
@@ -60,28 +68,23 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ status: deed.status });
   }
 
-  const task = TASK_TYPES.find((t) => t.id === deed.taskTypeId);
-  if (!task) {
-    return NextResponse.json({ error: "invalid_task" }, { status: 400 });
-  }
-
-  if (!deed.proofUrl || (task.beforeAfter && !deed.proofBeforeUrl)) {
+  if (!deed.proofUrl || !deed.proofBeforeUrl) {
     await rejectDeed(db, deedId, 0, "missing_proof");
     return NextResponse.json({ status: "rejected", reason: "missing_proof" });
   }
 
   let verdict: Verdict;
   try {
-    verdict = await runVisionCheck(task, deed);
+    verdict = await runVisionCheck(deed);
   } catch {
     // Model call failed or returned junk — always fall back to a human
     // moderator instead of guessing.
-    await flagForReview(db, deedId, null, "ai_unavailable", null, midpointPoints(task));
+    await flagForReview(db, deedId, null, "ai_unavailable", null, DEFAULT_REVIEW_POINTS, null);
     return NextResponse.json({ status: "review", reason: "ai_unavailable" });
   }
 
   if (verdict.verdict === "reject" && verdict.confidence >= REJECT_THRESHOLD) {
-    await rejectDeed(db, deedId, verdict.confidence, verdict.reason);
+    await rejectDeed(db, deedId, verdict.confidence, verdict.reason, verdict.taskTypeId);
     return NextResponse.json({
       status: "rejected",
       confidence: verdict.confidence,
@@ -93,7 +96,7 @@ export async function POST(req: NextRequest) {
   // recommendation. An admin has to confirm it in the review queue before the
   // citizen actually gets any points; the AI cannot award points on its own.
   const recommendation = verdict.verdict === "reject" ? "reject" : "approve";
-  await flagForReview(db, deedId, verdict.confidence, verdict.reason, recommendation, verdict.points);
+  await flagForReview(db, deedId, verdict.confidence, verdict.reason, recommendation, verdict.points, verdict.taskTypeId);
   return NextResponse.json({
     status: "review",
     confidence: verdict.confidence,
@@ -103,19 +106,20 @@ export async function POST(req: NextRequest) {
   });
 }
 
-async function runVisionCheck(task: TaskType, deed: DeedRecord): Promise<Verdict> {
-  const images = task.beforeAfter
-    ? [
-        { type: "image_url", image_url: { url: deed.proofBeforeUrl } },
-        { type: "image_url", image_url: { url: deed.proofUrl } },
-      ]
-    : [{ type: "image_url", image_url: { url: deed.proofUrl } }];
+async function runVisionCheck(deed: DeedRecord): Promise<Verdict> {
+  const images = [
+    { type: "image_url", image_url: { url: deed.proofBeforeUrl } },
+    { type: "image_url", image_url: { url: deed.proofUrl } },
+  ];
 
-  const pointsRule = `If the proof looks legitimate, also assess how much real effort/scale is visible and pick an integer "points" between ${task.minPoints} and ${task.maxPoints} (${task.minPoints}=minimal token effort, ${task.maxPoints}=substantial, clearly time-consuming effort). If you would reject, set "points" to 0.`;
+  const categoryList = TASK_TYPES.map(
+    (t) => `- "${t.id}": ${t.minPoints}-${t.maxPoints} points`,
+  ).join("\n");
+  const validIds = TASK_TYPES.map((t) => `"${t.id}"`).join(" | ");
 
-  const prompt = task.beforeAfter
-    ? `You are a strict fraud-detection reviewer for a civic good-deeds app. Task type: "${task.id}". The FIRST image is claimed to be BEFORE the deed, the SECOND is AFTER. Check: (1) both images show the same real physical location, (2) there is a genuine visible improvement consistent with "${task.id}" (e.g. litter removed, graffiti gone, tree cared for), (3) neither image looks staged, stock, screenshotted, or AI-generated. Default to "review" if you are not confident either way. ${pointsRule} Reply with ONLY strict JSON, no markdown: {"verdict":"approve"|"reject"|"review","confidence":0-1,"points":integer,"reason":"short reason"}`
-    : `You are a strict fraud-detection reviewer for a civic good-deeds app. Task type: "${task.id}". Check that the photo genuinely shows this deed being performed and is not a stock photo, screenshot, or AI-generated image. Default to "review" if you are not confident either way. ${pointsRule} Reply with ONLY strict JSON, no markdown: {"verdict":"approve"|"reject"|"review","confidence":0-1,"points":integer,"reason":"short reason"}`;
+  const prompt = `You are a strict fraud-detection reviewer for a civic good-deeds app. The FIRST image is claimed to be BEFORE the deed, the SECOND is AFTER. The citizen did not declare a category — you must classify it yourself into whichever of these best matches what the photos show:
+${categoryList}
+Check: (1) both images show the same real physical location, (2) there is a genuine visible improvement/action consistent with the category you pick, (3) neither image looks staged, stock, screenshotted, or AI-generated. Default to "review" if you are not confident either way. If the proof looks legitimate, also assess how much real effort/scale is visible and pick an integer "points" inside the chosen category's range (low end = minimal token effort, high end = substantial, clearly time-consuming effort). If you would reject, set "points" to 0 and pick your best-guess category anyway. Reply with ONLY strict JSON, no markdown: {"verdict":"approve"|"reject"|"review","taskTypeId":${validIds},"confidence":0-1,"points":integer,"reason":"short reason"}`;
 
   const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
     method: "POST",
@@ -145,12 +149,16 @@ async function runVisionCheck(task: TaskType, deed: DeedRecord): Promise<Verdict
     ? parsed.verdict
     : "review";
   const reason = typeof parsed.reason === "string" ? parsed.reason.slice(0, 300) : "unspecified";
+
+  const task = TASK_TYPES.find((t) => t.id === parsed.taskTypeId) ?? null;
+  const taskTypeId: TaskTypeId | null = task?.id ?? null;
+
   const points =
-    verdict === "reject"
+    verdict === "reject" || !task
       ? 0
       : typeof parsed.points === "number"
         ? Math.max(task.minPoints, Math.min(task.maxPoints, Math.round(parsed.points)))
-        : midpointPoints(task);
+        : Math.round((task.minPoints + task.maxPoints) / 2);
 
-  return { verdict, confidence, reason, points };
+  return { verdict, confidence, reason, points, taskTypeId };
 }

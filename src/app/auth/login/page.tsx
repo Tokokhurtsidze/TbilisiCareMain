@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Chrome, Mail, Lock } from "lucide-react";
-import { authErrorKey, useAuth } from "@/lib/auth-context";
+import { AuthApiError, authErrorKey, useAuth } from "@/lib/auth-context";
 import { useI18n } from "@/lib/i18n";
 import { Button } from "@/components/ui/Button";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
@@ -21,20 +21,36 @@ export default function LoginPage() {
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(null);
+  const [attemptsLeft, setAttemptsLeft] = useState<number | null>(null);
+  const [lockSeconds, setLockSeconds] = useState(0);
 
   useEffect(() => {
     if (!loading && user) router.replace("/app");
   }, [user, loading, router]);
+
+  useEffect(() => {
+    if (lockSeconds <= 0) return;
+    const timer = setTimeout(() => setLockSeconds((s) => s - 1), 1000);
+    return () => clearTimeout(timer);
+  }, [lockSeconds]);
 
   const handleEmail = async (e: React.FormEvent) => {
     e.preventDefault();
     setBusy(true);
     setErr(null);
     setInfo(null);
+    setAttemptsLeft(null);
     try {
       await signInWithEmail(email, password);
     } catch (e) {
-      setErr(t(authErrorKey(e)));
+      if (e instanceof AuthApiError && e.code === "auth/lockout") {
+        setLockSeconds(e.retryAfterSeconds ?? 60);
+      } else {
+        setErr(t(authErrorKey(e)));
+        if (e instanceof AuthApiError && typeof e.attemptsRemaining === "number") {
+          setAttemptsLeft(e.attemptsRemaining);
+        }
+      }
     } finally {
       setBusy(false);
     }
@@ -107,14 +123,18 @@ export default function LoginPage() {
               required
             />
 
+            {attemptsLeft !== null && (
+              <p className="text-sm text-danger">{t("auth.error.attemptsLeft", { n: attemptsLeft })}</p>
+            )}
+
             <Button
               type="submit"
               size="lg"
               className="w-full"
               loading={busy}
-              disabled={!email || !password}
+              disabled={!email || !password || lockSeconds > 0}
             >
-              {t("auth.signin.email")}
+              {lockSeconds > 0 ? t("auth.error.lockout", { n: lockSeconds }) : t("auth.signin.email")}
             </Button>
           </form>
 

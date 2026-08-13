@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Chrome, Mail, Lock, User as UserIcon } from "lucide-react";
-import { authErrorKey, useAuth } from "@/lib/auth-context";
+import { AuthApiError, authErrorKey, useAuth } from "@/lib/auth-context";
 import { useI18n } from "@/lib/i18n";
 import { Button } from "@/components/ui/Button";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
@@ -21,10 +21,17 @@ export default function RegisterPage() {
   const [confirm, setConfirm] = useState("");
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+  const [lockSeconds, setLockSeconds] = useState(0);
 
   useEffect(() => {
     if (!loading && user) router.replace("/app");
   }, [user, loading, router]);
+
+  useEffect(() => {
+    if (lockSeconds <= 0) return;
+    const timer = setTimeout(() => setLockSeconds((s) => s - 1), 1000);
+    return () => clearTimeout(timer);
+  }, [lockSeconds]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,7 +48,11 @@ export default function RegisterPage() {
     try {
       await signUpWithEmail(email, password, name);
     } catch (e) {
-      setErr(t(authErrorKey(e)));
+      if (e instanceof AuthApiError && e.code === "auth/rate-limited") {
+        setLockSeconds(e.retryAfterSeconds ?? 60);
+      } else {
+        setErr(t(authErrorKey(e)));
+      }
     } finally {
       setBusy(false);
     }
@@ -120,9 +131,9 @@ export default function RegisterPage() {
               size="lg"
               className="w-full"
               loading={busy}
-              disabled={!name || !email || !password || !confirm}
+              disabled={!name || !email || !password || !confirm || lockSeconds > 0}
             >
-              {t("auth.signup.cta")}
+              {lockSeconds > 0 ? t("auth.error.rateLimited", { n: lockSeconds }) : t("auth.signup.cta")}
             </Button>
           </form>
 

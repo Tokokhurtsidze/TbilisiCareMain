@@ -24,6 +24,7 @@ import { useI18n } from "@/lib/i18n";
 import { Button } from "@/components/ui/Button";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { TbilisiLogo } from "@/components/TbilisiLogo";
+import { UserAvatar } from "@/components/UserAvatar";
 import { DEMO_NEWS } from "@/lib/demo-data";
 import { SOCIAL_LINKS } from "@/lib/site-links";
 import { relativeTime } from "@/lib/utils";
@@ -364,9 +365,9 @@ export default function LandingClient() {
       <section className="max-w-7xl mx-auto px-6 py-16">
         <h2 className="font-display text-3xl font-semibold text-center tracking-tight mb-8">{t("landing.testimonials.title")}</h2>
         <div className="grid sm:grid-cols-3 gap-5">
-          <Quote text={t("landing.testimonials.q1")} author={t("landing.testimonials.q1.author")} seed="nino-f" isFemale />
-          <Quote text={t("landing.testimonials.q2")} author={t("landing.testimonials.q2.author")} seed="giorgi-m" />
-          <Quote text={t("landing.testimonials.q3")} author={t("landing.testimonials.q3.author")} seed="babo-tamuna-f" isFemale />
+          <Quote text={t("landing.testimonials.q1")} author={t("landing.testimonials.q1.author")} />
+          <Quote text={t("landing.testimonials.q2")} author={t("landing.testimonials.q2.author")} />
+          <Quote text={t("landing.testimonials.q3")} author={t("landing.testimonials.q3.author")} />
         </div>
       </section>
 
@@ -436,22 +437,13 @@ export default function LandingClient() {
   );
 }
 
-function Quote({ text, author, seed, isFemale }: { text: string; author: string; seed: string; isFemale?: boolean }) {
-  const avatarUrl = isFemale
-    ? `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(seed)}&top=longHair,straight01,curly,bob&facialHairChance=0`
-    : `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(seed)}&top=shortHair,shortFlat,sides&facialHairChance=30`;
-
+function Quote({ text, author }: { text: string; author: string }) {
   return (
     <figure className="rounded-2xl border border-line bg-white dark:bg-surface-elevated p-6 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
       <div className="text-brand text-3xl font-serif leading-none mb-3 opacity-30">&ldquo;</div>
       <blockquote className="text-sm leading-relaxed text-ink-primary">{text}</blockquote>
       <figcaption className="mt-5 flex items-center gap-3 pt-4 border-t border-line">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={avatarUrl}
-          alt=""
-          className="h-9 w-9 rounded-full bg-surface-subtle"
-        />
+        <UserAvatar src={null} size={9} />
         <span className="text-sm font-medium text-ink-secondary">{author}</span>
       </figcaption>
     </figure>

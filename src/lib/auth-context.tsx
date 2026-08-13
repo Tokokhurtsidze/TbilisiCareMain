@@ -8,12 +8,11 @@ import {
   type ReactNode,
 } from "react";
 import {
-  createUserWithEmailAndPassword,
   EmailAuthProvider,
   onAuthStateChanged,
   reauthenticateWithCredential,
   sendPasswordResetEmail,
-  signInWithEmailAndPassword,
+  signInWithCustomToken,
   signInWithPopup,
   signOut as fbSignOut,
   updateEmail,
@@ -51,6 +50,25 @@ type AuthCtx = {
 };
 
 const Ctx = createContext<AuthCtx | null>(null);
+
+// Thrown by signInWithEmail/signUpWithEmail instead of a raw Firebase error —
+// both now go through our own API routes (server-side rate limiting/lockout),
+// so we synthesize a Firebase-style code for authErrorKey plus whatever
+// lockout/rate-limit metadata the UI needs to show a countdown.
+export class AuthApiError extends Error {
+  code: string;
+  retryAfterSeconds?: number;
+  attemptsRemaining?: number;
+  constructor(
+    code: string,
+    opts?: { retryAfterSeconds?: number; attemptsRemaining?: number },
+  ) {
+    super(code);
+    this.code = code;
+    this.retryAfterSeconds = opts?.retryAfterSeconds;
+    this.attemptsRemaining = opts?.attemptsRemaining;
+  }
+}
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
@@ -139,13 +157,42 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       await signInWithPopup(auth(), googleProvider);
     },
     signInWithEmail: async (email, password) => {
-      await signInWithEmailAndPassword(auth(), email, password);
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        if (data.error === "locked") {
+          throw new AuthApiError("auth/lockout", { retryAfterSeconds: data.retryAfterSeconds });
+        }
+        if (data.error === "TOO_MANY_ATTEMPTS_TRY_LATER") {
+          throw new AuthApiError("auth/too-many-requests");
+        }
+        throw new AuthApiError("auth/wrong-password", { attemptsRemaining: data.attemptsRemaining });
+      }
+      await signInWithCustomToken(auth(), data.customToken);
     },
     signUpWithEmail: async (email, password, displayName) => {
-      const cred = await createUserWithEmailAndPassword(auth(), email, password);
-      if (displayName) {
-        await updateProfile(cred.user, { displayName });
+      const res = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password, name: displayName }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        if (data.error === "rate_limited") {
+          throw new AuthApiError("auth/rate-limited", { retryAfterSeconds: data.retryAfterSeconds });
+        }
+        if (data.error === "email_in_use") throw new AuthApiError("auth/email-already-in-use");
+        if (data.error === "invalid-email") throw new AuthApiError("auth/invalid-email");
+        if (data.error === "weak_password" || data.error === "invalid-password") {
+          throw new AuthApiError("auth/weak-password");
+        }
+        throw new AuthApiError("auth/generic");
       }
+      await signInWithCustomToken(auth(), data.customToken);
     },
     resetPassword: async (email) => {
       await sendPasswordResetEmail(auth(), email);
@@ -199,6 +246,12 @@ export function authErrorKey(err: unknown): string {
       return "auth.error.userNotFound";
     case "auth/requires-recent-login":
       return "auth.error.requiresRecent";
+    case "auth/operation-not-allowed":
+      return "auth.error.disabled";
+    case "auth/lockout":
+      return "auth.error.lockout";
+    case "auth/rate-limited":
+      return "auth.error.rateLimited";
     case "auth/too-many-requests":
       return "auth.error.tooMany";
     default:

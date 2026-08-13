@@ -168,23 +168,6 @@ export default function ProfilePage() {
         <ThemeToggle />
       </Card>
 
-      <Card>
-        <Toggle
-          label={t("profile.consent")}
-          checked={!!userDoc?.consentLeaderboard}
-          onChange={(v) => updateField("consentLeaderboard", v)}
-        />
-      </Card>
-
-      <Card>
-        <Toggle
-          label={t("profile.consentSpotlight")}
-          checked={userDoc?.consentSpotlight !== false}
-          onChange={(v) => updateField("consentSpotlight", v)}
-        />
-        <p className="text-xs text-ink-secondary mt-2">{t("profile.consentSpotlight.hint")}</p>
-      </Card>
-
       <Button variant="ghost" className="w-full" onClick={signOut}>
         <LogOut size={18} />
         {t("auth.signout")}
@@ -462,35 +445,5 @@ function PasswordEditor({
         </Button>
       </div>
     </div>
-  );
-}
-
-function Toggle({
-  label,
-  checked,
-  onChange,
-}: {
-  label: string;
-  checked: boolean;
-  onChange: (v: boolean) => void;
-}) {
-  return (
-    <label className="flex items-center justify-between cursor-pointer">
-      <span className="text-sm font-medium">{label}</span>
-      <button
-        role="switch"
-        aria-checked={checked}
-        onClick={() => onChange(!checked)}
-        className={`relative h-6 w-11 rounded-full transition ${
-          checked ? "bg-brand" : "bg-surface-subtle"
-        }`}
-      >
-        <span
-          className={`absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-white shadow transition ${
-            checked ? "translate-x-5" : ""
-          }`}
-        />
-      </button>
-    </label>
   );
 }

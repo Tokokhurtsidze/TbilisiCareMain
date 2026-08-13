@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import {
   MapPin,
   Upload,
@@ -10,11 +10,6 @@ import {
   Image as ImageIcon,
   Video,
   X,
-  Trash2,
-  Dog,
-  HeartHandshake,
-  SprayCan,
-  Trees,
 } from "lucide-react";
 import {
   collection,
@@ -27,7 +22,7 @@ import { useAuth } from "@/lib/auth-context";
 import { useI18n } from "@/lib/i18n";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
-import { TASK_TYPES, midpointPoints, type ProofType, type TaskTypeId } from "@/types";
+import type { ProofType } from "@/types";
 
 type Coords = { lat: number; lng: number } | null;
 type Stage =
@@ -42,10 +37,7 @@ export default function SubmitPage() {
   const { t } = useI18n();
   const { user, userDoc } = useAuth();
   const router = useRouter();
-  const search = useSearchParams();
-  const preset = search.get("type") as TaskTypeId | null;
 
-  const [taskType, setTaskType] = useState<TaskTypeId | null>(preset);
   const [before, setBefore] = useState<File | null>(null);
   const [after, setAfter] = useState<File | null>(null);
   const [beforePreview, setBeforePreview] = useState<string | null>(null);
@@ -58,8 +50,6 @@ export default function SubmitPage() {
   const [outcome, setOutcome] = useState<{ reason?: string; suggestedPoints?: number } | null>(null);
   const beforeInput = useRef<HTMLInputElement>(null);
   const afterInput = useRef<HTMLInputElement>(null);
-
-  const task = TASK_TYPES.find((x) => x.id === taskType) ?? null;
 
   useEffect(() => {
     if (!navigator.geolocation) return;
@@ -95,12 +85,7 @@ export default function SubmitPage() {
 
   const afterType = fileType(after);
 
-  const ready =
-    !!task &&
-    !!after &&
-    (!task.beforeAfter || !!before) &&
-    !!user &&
-    !!userDoc;
+  const ready = !!before && !!after && !!user && !!userDoc;
 
   const UPLOAD_STALL_TIMEOUT_MS = 30_000;
 
@@ -165,7 +150,7 @@ export default function SubmitPage() {
   };
 
   const handleSubmit = async () => {
-    if (!ready || !user || !userDoc || !task) return;
+    if (!ready || !user || !userDoc) return;
     setErr(null);
     setProgress(0);
     try {
@@ -174,7 +159,7 @@ export default function SubmitPage() {
 
       setStage("uploading");
       const afterUrl = await uploadProof(after!, deedId, "after");
-      const beforeUrl = task.beforeAfter ? await uploadProof(before!, deedId, "before") : null;
+      const beforeUrl = await uploadProof(before!, deedId, "before");
 
       setStage("saving");
       const batch = writeBatch(db());
@@ -184,7 +169,9 @@ export default function SubmitPage() {
         authorPhotoURL: userDoc.photoURL ?? user.photoURL ?? null,
         authorPoints: userDoc.carePoints ?? 0,
         authorLevel: userDoc.level ?? 1,
-        taskTypeId: task.id,
+        // AI classifies the category from the photos during validation —
+        // the citizen no longer picks one.
+        taskTypeId: null,
         status: "pending",
         declaredLat: coords?.lat ?? null,
         declaredLng: coords?.lng ?? null,
@@ -193,7 +180,7 @@ export default function SubmitPage() {
         proofBeforeUrl: beforeUrl,
         cvConfidence: null,
         rejectionReason: null,
-        pointsAwarded: midpointPoints(task),
+        pointsAwarded: 0,
         caption: caption.trim() || null,
         commentCount: 0,
         createdAt: serverTimestamp(),
@@ -230,14 +217,6 @@ export default function SubmitPage() {
       setStage("idle");
     }
   };
-
-  const SUBMIT_ICONS = {
-    "trash-2": Trash2,
-    dog: Dog,
-    "heart-handshake": HeartHandshake,
-    "spray-can": SprayCan,
-    trees: Trees,
-  } as const;
 
   if (stage === "rejected" || stage === "review") {
     const isReview = stage === "review";
@@ -280,50 +259,22 @@ export default function SubmitPage() {
         {t("submit.demoNotice")}
       </div>
 
-      <Card>
-        <p className="text-xs font-bold uppercase tracking-wider text-ink-secondary mb-3">{t("submit.choose")}</p>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-          {TASK_TYPES.map((tt) => {
-            const Icon = SUBMIT_ICONS[tt.icon as keyof typeof SUBMIT_ICONS];
-            const active = taskType === tt.id;
-            return (
-              <button
-                key={tt.id}
-                onClick={() => setTaskType(tt.id)}
-                className={`p-3.5 rounded-xl text-sm font-semibold text-left transition-all duration-200 border flex items-start gap-3 group ${
-                  active
-                    ? "bg-brand text-white border-brand shadow-[var(--shadow-brand)]"
-                    : "bg-surface-subtle border-line text-ink-primary hover:border-brand hover:bg-brand-soft"
-                }`}
-              >
-                <div className={`mt-0.5 rounded-lg p-1.5 shrink-0 ${active ? "bg-white/20" : "bg-surface-base"}`}>
-                  {Icon && <Icon size={16} className={active ? "text-white" : "text-brand"} strokeWidth={1.7} />}
-                </div>
-                <div className="min-w-0">{t(`task.${tt.id}`)}</div>
-              </button>
-            );
-          })}
-        </div>
-      </Card>
-
-      {task?.beforeAfter && (
-        <ProofSlot
-          label={t("submit.before")}
-          file={before}
-          preview={beforePreview}
-          onPick={(f) => setBefore(f)}
-          inputRef={beforeInput}
-          accept="image/*"
-        />
-      )}
+      <ProofSlot
+        label={t("submit.before")}
+        file={before}
+        preview={beforePreview}
+        onPick={(f) => setBefore(f)}
+        inputRef={beforeInput}
+        accept="image/*"
+      />
 
       <ProofSlot
-        label={task?.beforeAfter ? t("submit.after") : t("submit.proof")}
+        label={t("submit.after")}
         file={after}
         preview={afterPreview}
         onPick={(f) => setAfter(f)}
         inputRef={afterInput}
-        accept={task?.beforeAfter ? "image/*" : "image/*,video/*"}
+        accept="image/*"
       />
 
       <Card>

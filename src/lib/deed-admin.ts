@@ -164,13 +164,16 @@ export async function rejectDeed(
   deedId: string,
   cvConfidence: number | null,
   reason: string | null,
+  taskTypeId?: TaskTypeId | null,
 ): Promise<void> {
-  await db.collection("deeds").doc(deedId).update({
+  const update: Record<string, unknown> = {
     status: "rejected",
     validatedAt: Date.now(),
     cvConfidence,
     rejectionReason: reason,
-  });
+  };
+  if (taskTypeId !== undefined) update.taskTypeId = taskTypeId;
+  await db.collection("deeds").doc(deedId).update(update);
 }
 
 // AI never awards points directly — even a confident "looks legit" verdict
@@ -185,6 +188,7 @@ export async function flagForReview(
   reason: string | null,
   aiRecommendation: "approve" | "reject" | null = null,
   suggestedPoints: number | null = null,
+  taskTypeId?: TaskTypeId | null,
 ): Promise<void> {
   const update: Record<string, unknown> = {
     status: "review",
@@ -193,5 +197,6 @@ export async function flagForReview(
     aiRecommendation,
   };
   if (suggestedPoints != null) update.pointsAwarded = suggestedPoints;
+  if (taskTypeId !== undefined) update.taskTypeId = taskTypeId;
   await db.collection("deeds").doc(deedId).update(update);
 }
