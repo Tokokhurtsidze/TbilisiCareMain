@@ -88,7 +88,7 @@ export default function LandingClient() {
       {/* ── HEADER ─────────────────────────────────────────────────────── */}
       <header suppressHydrationWarning className="sticky top-0 z-30 bg-surface-base/90 backdrop-blur border-b border-line">
         <div suppressHydrationWarning className="max-w-6xl mx-auto flex items-center justify-between px-4 py-3">
-          <TbilisiLogo size={40} className="hidden sm:block shrink-0" />
+          <TbilisiLogo size={48} className="hidden sm:block shrink-0" />
 
           {/* Desktop controls */}
           <div suppressHydrationWarning className="hidden sm:flex items-center gap-1.5">
@@ -135,7 +135,7 @@ export default function LandingClient() {
         aria-label={t("site.menu")}
       >
         <div className="h-14 flex items-center justify-between px-4 border-b border-line">
-          <TbilisiLogo size={32} className="shrink-0" />
+          <TbilisiLogo size={40} className="shrink-0" />
           <button
             onClick={() => setMenuOpen(false)}
             className="h-10 w-10 grid place-items-center rounded-lg hover:bg-surface-subtle"
@@ -408,7 +408,7 @@ export default function LandingClient() {
         <div className="max-w-7xl mx-auto px-6 py-10 grid sm:grid-cols-2 gap-6">
           <div>
             <div className="flex items-center gap-2 mb-2">
-              <TbilisiLogo size={36} className="shrink-0" />
+              <TbilisiLogo size={44} className="shrink-0" />
             </div>
             <p className="text-sm text-ink-secondary mb-4">{t("landing.footer.tagline")}</p>
             <ul className="flex gap-2 flex-wrap">

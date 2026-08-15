@@ -44,7 +44,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           </button>
 
           <Link href="/app" className="hidden md:flex items-center gap-2 mr-auto">
-            <TbilisiLogo size={36} className="shrink-0" />
+            <TbilisiLogo size={44} className="shrink-0" />
           </Link>
 
           <nav
@@ -109,7 +109,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         aria-label={t("site.menu")}
       >
         <div className="h-14 flex items-center justify-between px-4 border-b border-line">
-          <TbilisiLogo size={32} className="shrink-0" />
+          <TbilisiLogo size={40} className="shrink-0" />
           <button
             onClick={() => setDrawerOpen(false)}
             className="h-10 w-10 grid place-items-center rounded-lg hover:bg-surface-subtle"

@@ -1,5 +1,5 @@
 import { FieldValue, Timestamp, type Firestore } from "firebase-admin/firestore";
-import { LEVELS, type Locale, type Localized, type TaskTypeId } from "@/types";
+import { LEVELS, TASK_TYPES, type Locale, type Localized, type TaskTypeId } from "@/types";
 import { computeStreak, isoWeekId, weekStartMs, STREAK_MILESTONES } from "@/lib/week";
 
 // Server-only (Admin SDK). Shared by the manual admin moderation route and
@@ -16,6 +16,21 @@ const TASK_LABELS: Record<string, Localized> = {
   graffiti: L("გრაფიტის წაშლა", "removing graffiti", "удаление графити"),
   "tree-care": L("ხის მოვლა", "caring for a tree", "заботу о дереве"),
 };
+
+// Mirrors src/locales/{ka,en,ru}.json's "level.*" strings — hand-written here
+// too since this runs server-side (Admin SDK) with no i18n context available.
+const LEVEL_TITLES: Record<string, Localized> = {
+  "level.bystander": L("უბრალო მაცქერალი", "Innocent Bystander", "Невинный наблюдатель"),
+  "level.neighbor": L("გაღვიძებული მეზობელი", "Awakened Neighbor", "Пробуждённый сосед"),
+  "level.active": L("აქტიური მოქალაქე", "Active Citizen", "Активный гражданин"),
+  "level.pillar": L("საზოგადოების საყრდენი", "Community Pillar", "Опора сообщества"),
+  "level.hero": L("უბნის გმირი", "District Hero", "Герой района"),
+  "level.guardian": L("თბილისის მცველი", "Guardian of Tbilisi", "Хранитель Тбилиси"),
+};
+
+// Round-number CarePoints thresholds worth celebrating on their own, distinct
+// from the level thresholds (a citizen can cross one of these mid-level).
+const POINT_MILESTONES = [500, 1000, 2500, 5000, 10000, 25000, 50000, 100000];
 
 export async function approveDeed(
   db: Firestore,
@@ -40,9 +55,14 @@ export async function approveDeed(
   const challengeBonus = await weeklyChallengeBonus(db, userId, deed.taskTypeId as TaskTypeId);
   const bonus = milestoneBonus + challengeBonus;
 
-  const newPoints = (userData.carePoints ?? 0) + points + bonus;
+  const oldPoints = userData.carePoints ?? 0;
+  const oldLevel = userData.level ?? 1;
+  const newPoints = oldPoints + points + bonus;
   const newLevel =
     [...LEVELS].reverse().find((l) => newPoints >= l.threshold)?.level ?? 1;
+
+  const crossedPointMilestone = POINT_MILESTONES.filter((m) => oldPoints < m && newPoints >= m).at(-1) ?? null;
+  const leveledUp = newLevel > oldLevel;
 
   const tasks: Promise<unknown>[] = [
     deedRef.update({
@@ -70,7 +90,13 @@ export async function approveDeed(
   // Citizens can opt out of the public spotlight (profile setting) — points
   // are unaffected either way, only the public photo/name post is skipped.
   if (userData.consentSpotlight !== false) {
-    tasks.push(createSpotlightPost(db, deedId, deed, points));
+    tasks.push(createSpotlightPost(db, deedId, deed, points, deed.taskTypeId as TaskTypeId));
+
+    // Level-up and round-number CarePoints milestones both get their own
+    // celebration post — real, server-computed numbers, never fabricated.
+    if (leveledUp || crossedPointMilestone) {
+      tasks.push(createMilestonePost(db, deedId, deed, newPoints, newLevel, leveledUp, crossedPointMilestone));
+    }
   }
 
   await Promise.all(tasks);
@@ -127,22 +153,34 @@ async function createSpotlightPost(
   deedId: string,
   deed: Record<string, unknown>,
   points: number,
+  taskTypeId: TaskTypeId | undefined,
 ): Promise<void> {
   const taskLabel = TASK_LABELS[deed.taskTypeId as string] ?? L("კარგი საქმე", "a good deed", "доброе дело");
   const authorName = (deed.authorName as string) || "A citizen";
   const locales: Locale[] = ["ka", "en", "ru"];
 
+  // Effort at (or above) the top of its task type's range is called out with
+  // stronger copy — same real pointsAwarded number either way, no fabrication.
+  const task = TASK_TYPES.find((t) => t.id === taskTypeId);
+  const isExceptional = !!task && points >= task.maxPoints;
+
   const title: Localized = { ka: "", en: "", ru: "" };
   const body: Localized = { ka: "", en: "", ru: "" };
   for (const l of locales) {
-    title[l] =
-      l === "ka" ? `${authorName}-მ ახლახან დაეხმარა თბილისს 🌟`
-      : l === "ru" ? `${authorName} только что помог(ла) Тбилиси 🌟`
-      : `${authorName} just helped Tbilisi 🌟`;
-    body[l] =
-      l === "ka" ? `დადასტურებულია: ${authorName} შეასრულა ${taskLabel.ka}. AI-ს დადასტურებული მტკიცებულება, +${points} CarePoints მიღებულია.`
-      : l === "ru" ? `Подтверждено: ${authorName} выполнил(а) ${taskLabel.ru}. Доказательство проверено AI, начислено +${points} CarePoints.`
-      : `Verified: ${authorName} completed ${taskLabel.en}. AI-checked proof, +${points} CarePoints awarded.`;
+    title[l] = isExceptional
+      ? (l === "ka" ? `${authorName}-მ საოცარი საქმე გააკეთა 🌟`
+        : l === "ru" ? `${authorName} совершил(а) нечто потрясающее 🌟`
+        : `${authorName} did something amazing 🌟`)
+      : (l === "ka" ? `${authorName}-მ ახლახან დაეხმარა თბილისს 🌟`
+        : l === "ru" ? `${authorName} только что помог(ла) Тбилиси 🌟`
+        : `${authorName} just helped Tbilisi 🌟`);
+    body[l] = isExceptional
+      ? (l === "ka" ? `გამორჩეული ძალისხმევა: ${authorName} შეასრულა ${taskLabel.ka} ყველაზე მაღალი შედეგით. AI-ს დადასტურებული მტკიცებულება, +${points} CarePoints მიღებულია.`
+        : l === "ru" ? `Выдающееся усилие: ${authorName} выполнил(а) ${taskLabel.ru} с максимальным результатом. Доказательство проверено AI, начислено +${points} CarePoints.`
+        : `Outstanding effort: ${authorName} completed ${taskLabel.en} at the top of its range. AI-checked proof, +${points} CarePoints awarded.`)
+      : (l === "ka" ? `დადასტურებულია: ${authorName} შეასრულა ${taskLabel.ka}. AI-ს დადასტურებული მტკიცებულება, +${points} CarePoints მიღებულია.`
+        : l === "ru" ? `Подтверждено: ${authorName} выполнил(а) ${taskLabel.ru}. Доказательство проверено AI, начислено +${points} CarePoints.`
+        : `Verified: ${authorName} completed ${taskLabel.en}. AI-checked proof, +${points} CarePoints awarded.`);
   }
 
   await db.collection("officialPosts").add({
@@ -154,6 +192,64 @@ async function createSpotlightPost(
     authorPhotoURL: (deed.authorPhotoURL as string) ?? null,
     ctaLabel: L("საქმის ნახვა", "View deed", "Смотреть дело"),
     ctaHref: `/app/deed/${deedId}`,
+    source: "ai",
+    createdAt: Date.now(),
+  });
+}
+
+// Level-ups and round-number CarePoints thresholds each get their own
+// milestone post — separate from the per-deed spotlight above, since these
+// celebrate the citizen's cumulative standing, not just this one submission.
+async function createMilestonePost(
+  db: Firestore,
+  deedId: string,
+  deed: Record<string, unknown>,
+  totalPoints: number,
+  newLevel: number,
+  leveledUp: boolean,
+  crossedPointMilestone: number | null,
+): Promise<void> {
+  const authorName = (deed.authorName as string) || "A citizen";
+  const levelKey = LEVELS.find((l) => l.level === newLevel)?.key ?? "level.bystander";
+  const levelTitle = LEVEL_TITLES[levelKey] ?? LEVEL_TITLES["level.bystander"];
+  const locales: Locale[] = ["ka", "en", "ru"];
+
+  const title: Localized = { ka: "", en: "", ru: "" };
+  const body: Localized = { ka: "", en: "", ru: "" };
+  for (const l of locales) {
+    title[l] = leveledUp
+      ? (l === "ka" ? `${authorName}-მ ახალ დონეს მიაღწია 🏆`
+        : l === "ru" ? `${authorName} достиг(ла) нового уровня 🏆`
+        : `${authorName} reached a new level 🏆`)
+      : (l === "ka" ? `${authorName}-მ ახალ ნიშნულს მიაღწია 🏆`
+        : l === "ru" ? `${authorName} достиг(ла) новой отметки 🏆`
+        : `${authorName} hit a new milestone 🏆`);
+
+    const levelPart = leveledUp
+      ? (l === "ka" ? `ახლა არის „${levelTitle.ka}“ (დონე ${newLevel}). `
+        : l === "ru" ? `Теперь на уровне «${levelTitle.ru}» (уровень ${newLevel}). `
+        : `Now at "${levelTitle.en}" (level ${newLevel}). `)
+      : "";
+    const pointsPart = crossedPointMilestone
+      ? (l === "ka" ? `${crossedPointMilestone.toLocaleString()}+ CarePoints გადალახა!`
+        : l === "ru" ? `Преодолел(а) отметку в ${crossedPointMilestone.toLocaleString()}+ CarePoints!`
+        : `Crossed ${crossedPointMilestone.toLocaleString()}+ CarePoints!`)
+      : (l === "ka" ? `სულ ${totalPoints.toLocaleString()} CarePoints.`
+        : l === "ru" ? `Всего ${totalPoints.toLocaleString()} CarePoints.`
+        : `${totalPoints.toLocaleString()} CarePoints total.`);
+    body[l] = `${levelPart}${pointsPart}`;
+  }
+
+  await db.collection("officialPosts").add({
+    tag: "milestone",
+    title,
+    body,
+    imageUrl: null,
+    authorName,
+    authorPhotoURL: (deed.authorPhotoURL as string) ?? null,
+    stats: [{ label: L("სულ ქულა", "Total CarePoints", "Всего баллов"), value: totalPoints.toLocaleString() }],
+    ctaLabel: L("ლიდერბორდის ნახვა", "See Leaderboard", "Смотреть рейтинг"),
+    ctaHref: "/app/leaderboard",
     source: "ai",
     createdAt: Date.now(),
   });

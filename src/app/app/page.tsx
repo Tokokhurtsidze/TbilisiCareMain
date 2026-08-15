@@ -21,12 +21,10 @@ import { useAuth } from "@/lib/auth-context";
 import { useI18n } from "@/lib/i18n";
 import { Card } from "@/components/ui/Card";
 import { OfficialPostCard } from "@/components/OfficialPostCard";
-import { RealStoryCard } from "@/components/RealStoryCard";
 import { NewsRail } from "@/components/NewsRail";
 import { WeeklyChallengeCard } from "@/components/WeeklyChallengeCard";
 import { TASK_TYPES, LEVELS, levelFor, type OfficialPost } from "@/types";
-import { DEMO_OFFICIAL_POSTS, SHOW_DEMO_CONTENT } from "@/lib/demo-data";
-import type { CommunityFeedItem } from "@/app/api/community-feed/route";
+import { SHOW_DEMO_CONTENT } from "@/lib/demo-data";
 
 const ICONS = {
   "trash-2": Trash2,
@@ -36,22 +34,12 @@ const ICONS = {
   trees: Trees,
 } as const;
 
-type FeedItem =
-  | { kind: "official"; id: string; ts: number; data: OfficialPost }
-  | { kind: "story";    id: string; ts: number; data: CommunityFeedItem };
+type FeedItem = { kind: "official"; id: string; ts: number; data: OfficialPost };
 
 export default function HomePage() {
   const { userDoc } = useAuth();
   const { t } = useI18n();
   const [officialPosts, setOfficialPosts] = useState<OfficialPost[]>([]);
-  const [communityStories, setCommunityStories] = useState<CommunityFeedItem[]>([]);
-
-  useEffect(() => {
-    fetch("/api/community-feed")
-      .then((r) => r.json())
-      .then((data) => setCommunityStories(data.items ?? []))
-      .catch(() => {});
-  }, []);
 
   // City Hall announcements + AI-generated deed-doer spotlights — the only
   // source of "posts" on the feed; there is no free-text user post feature,
@@ -73,11 +61,9 @@ export default function HomePage() {
     return () => unsub();
   }, []);
 
-  const feed: FeedItem[] = [
-    ...officialPosts.map((o) => ({ kind: "official" as const, id: o.id, ts: o.createdAt, data: o })),
-    ...(SHOW_DEMO_CONTENT ? DEMO_OFFICIAL_POSTS : []).map((o) => ({ kind: "official" as const, id: o.id, ts: o.createdAt, data: o })),
-    ...communityStories.map((s) => ({ kind: "story" as const, id: s.id, ts: s.publishedAt, data: s })),
-  ].sort((a, b) => b.ts - a.ts);
+  const feed: FeedItem[] = officialPosts
+    .map((o) => ({ kind: "official" as const, id: o.id, ts: o.createdAt, data: o }))
+    .sort((a, b) => b.ts - a.ts);
 
   const level = levelFor(userDoc?.carePoints ?? 0);
   const points = userDoc?.carePoints ?? 0;
@@ -107,7 +93,7 @@ export default function HomePage() {
               </div>
               <div>
                 <p className="text-[11px] text-ink-secondary uppercase tracking-wider font-semibold">{t("home.level")}</p>
-                <p className="font-bold text-ink-primary leading-tight">{t(level.key)}</p>
+                <p className="font-bold text-ink-primary leading-tight">{level.level}</p>
               </div>
             </div>
             <div className="text-right">
@@ -169,13 +155,9 @@ export default function HomePage() {
       <section>
         <h2 className="text-sm font-bold uppercase tracking-wider text-ink-secondary mb-3">{t("feed.title")}</h2>
         <div className="space-y-4">
-          {feed.map((item) =>
-            item.kind === "official" ? (
-              <OfficialPostCard key={`o-${item.id}`} post={item.data} />
-            ) : (
-              <RealStoryCard key={`s-${item.id}`} item={item.data} />
-            ),
-          )}
+          {feed.map((item) => (
+            <OfficialPostCard key={item.id} post={item.data} />
+          ))}
         </div>
       </section>
     </div>

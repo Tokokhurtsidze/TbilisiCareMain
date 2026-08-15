@@ -8,15 +8,15 @@ import { LEVELS, TASK_TYPES } from "@/types";
 // OPENROUTER_CHAT_MODEL (if set) is tried first, ahead of the built-in list.
 //
 // Ordering is based on actually testing each candidate's ka/en/ru output, not
-// just availability — the nvidia nemotron family (including the large "super"
-// and "ultra" variants) reliably IGNORED the "reply only in <language>"
-// instruction and produced garbled mixed-language text, so it's kept only as
-// a last-resort fallback rather than trusted as primary.
+// just availability. tencent/hy3:free and poolside/laguna-m.1:free (the
+// former primary/last-resort picks) have since been pulled from OpenRouter's
+// free tier entirely (404) — replaced with the current free-tier lineup,
+// re-verified against real ka->en/ru translation output.
 const FALLBACK_MODELS = [
-  "tencent/hy3:free",
-  "google/gemma-4-26b-a4b-it:free",
-  "poolside/laguna-m.1:free",
+  "google/gemma-4-31b-it:free",
+  "nvidia/nemotron-3-ultra-550b-a55b:free",
   "nvidia/nemotron-3-super-120b-a12b:free",
+  "openai/gpt-oss-20b:free",
 ];
 const CANDIDATE_MODELS = process.env.OPENROUTER_CHAT_MODEL
   ? [process.env.OPENROUTER_CHAT_MODEL, ...FALLBACK_MODELS]

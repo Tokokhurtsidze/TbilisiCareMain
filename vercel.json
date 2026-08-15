@@ -1,0 +1,5 @@
+{
+  "crons": [
+    { "path": "/api/cron/city-hall-post", "schedule": "0 9 * * 1,3,5" }
+  ]
+}

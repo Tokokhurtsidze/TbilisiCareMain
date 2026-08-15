@@ -94,7 +94,7 @@ export default function LoginPage() {
 
         <div className="rounded-2xl bg-surface-elevated border border-line shadow-card p-5 sm:p-8">
           <div className="flex justify-center mb-6">
-            <TbilisiLogo size={56} />
+            <TbilisiLogo size={68} />
           </div>
           <h1 className="text-2xl font-bold text-center mb-2">
             {t("auth.signin.title")}

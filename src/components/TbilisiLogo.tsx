@@ -1,7 +1,5 @@
-// Real TbilisiCare wordmark (public/logo.ico, also used as the site favicon).
-// It's a wide logotype (~2.6:1), not a square icon mark — size sets the
-// height and width follows naturally. Callers that assumed a square/circular
-// icon slot (badges, avatars) have been adjusted at the call site.
+// TbilisiCare emblem (public/Logo.png) — a square 1:1 circular seal mark,
+// not a wordmark. size sets both height and width.
 export function TbilisiLogo({
   size = 32,
   className = "",
@@ -12,9 +10,9 @@ export function TbilisiLogo({
   return (
     // eslint-disable-next-line @next/next/no-img-element
     <img
-      src="/logo.ico"
+      src="/Logo.png"
       alt="TbilisiCare"
-      style={{ height: size, width: "auto", display: "block" }}
+      style={{ height: size, width: size, display: "block" }}
       className={className}
     />
   );
