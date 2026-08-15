@@ -13,7 +13,7 @@ import { LEVELS, TASK_TYPES } from "@/types";
 // free tier entirely (404) — replaced with the current free-tier lineup,
 // re-verified against real ka->en/ru translation output.
 const FALLBACK_MODELS = [
-  "google/gemma-4-31b-it:free",
+  "dots-studio/dots-3-note-preview:free",
   "nvidia/nemotron-3-ultra-550b-a55b:free",
   "nvidia/nemotron-3-super-120b-a12b:free",
   "openai/gpt-oss-20b:free",
