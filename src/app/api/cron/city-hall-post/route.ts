@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { adminDb } from "@/lib/firebase-admin";
-import type { Locale, Localized } from "@/types";
+import { isCleanOutput } from "@/lib/ai-output-guard";
+import type { Localized } from "@/types";
 
 // Runs 3x/week (see vercel.json crons) to pull City Hall's own official news
 // (tbilisi.gov.ge/news — real projects, real officials, real dates) into the
@@ -71,20 +72,6 @@ function parseArticleBody(html: string): string | null {
   return m ? stripHtml(m[1]) : null;
 }
 
-// ---- translation quality guard (same lesson as the earlier generic-post
-// route: free OpenRouter models occasionally garble non-English output with
-// stray other-script characters) ----
-
-const LOCALES: Locale[] = ["ka", "en", "ru"];
-const ASCII = "\\u0020-\\u007E";
-const PUNCTUATION = "\\u2000-\\u206F";
-const EMOJI = "\\u2600-\\u27BF\\u{1F300}-\\u{1FAFF}\\u200D\\uFE0F";
-const CYRILLIC = "\\u0400-\\u04FF";
-const EN_RU_ALLOW: Record<"en" | "ru", RegExp> = {
-  en: new RegExp(`^[${ASCII}${PUNCTUATION}${EMOJI}\\n\\r]*$`, "u"),
-  ru: new RegExp(`^[${ASCII}${PUNCTUATION}${EMOJI}${CYRILLIC}\\n\\r]*$`, "u"),
-};
-
 function isNonEmpty(v: unknown): v is string {
   return typeof v === "string" && v.trim().length > 0;
 }
@@ -130,12 +117,12 @@ Reply with ONLY strict JSON, no markdown: {"en":{"title":"...","body":"..."},"ru
         continue;
       }
       if (
-        !EN_RU_ALLOW.en.test(en.title) ||
-        !EN_RU_ALLOW.en.test(en.body) ||
-        !EN_RU_ALLOW.ru.test(ru.title) ||
-        !EN_RU_ALLOW.ru.test(ru.body)
+        !isCleanOutput(en.title, "en") ||
+        !isCleanOutput(en.body, "en") ||
+        !isCleanOutput(ru.title, "ru") ||
+        !isCleanOutput(ru.body, "ru")
       ) {
-        lastError = `${model}: garbled/mixed-script output rejected`;
+        lastError = `${model}: garbled/repetitive output rejected`;
         continue;
       }
       return { en, ru };

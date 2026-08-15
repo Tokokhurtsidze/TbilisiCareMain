@@ -118,7 +118,7 @@ export default function HomePage() {
               </div>
               <p className="text-xs text-ink-secondary mt-2">
                 <span className="font-semibold text-ink-primary">{(nextLevel.threshold - points).toLocaleString()} CP</span>
-                {" "}to {t(nextLevel.key)}
+                {" "}to {t("home.level")} {nextLevel.level}
               </p>
             </div>
           ) : (
